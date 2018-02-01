@@ -8,8 +8,9 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = untitled9
+TARGET = qt-lh-mrapi
 TEMPLATE = app
+DESTDIR = ./Bin
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
@@ -33,4 +34,13 @@ HEADERS += \
 FORMS += \
         widget.ui
 
-include(./joint.pri)
+include(./joint/joint.pri)
+include(./interface/interface.pri)
+
+#INCLUDEPATH += $$PWD/interface/qwt/include/
+#LIBS += -L$$PWD/interface/qwt/lib -lqwt
+
+#INCLUDEPATH += $$PWD/joint/PCANBasic/Include
+#LIBS += -L$$PWD/joint/PCANBasic/x64 -lPCANBasic
+#DEPENDPATH += -L$$PWD/joint/PCANBasic/x64 -lPCANBasic
+#LIBS += -L$$PWD/joint/PCANBasic/x64/VC_LIB -lPCANBasic

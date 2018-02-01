@@ -3,6 +3,12 @@
 
 #include <QWidget>
 
+class Bottom;
+class Move;
+class SetAndHealth;
+class Pid;
+class OscilloScope;
+
 namespace Ui {
 class Widget;
 }
@@ -15,8 +21,16 @@ public:
     explicit Widget(QWidget *parent = 0);
     ~Widget();
 
+signals:
+    void widgetAllReady();
+
 private:
     Ui::Widget *ui;
+    Bottom *bottom;
+    Move *move;
+    SetAndHealth *setAndHealth;
+    Pid *pid;
+    OscilloScope *oscilloScope;
 };
 
 #endif // WIDGET_H
