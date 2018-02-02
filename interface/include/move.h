@@ -2,8 +2,7 @@
 #define MOVE_H
 
 #include <QWidget>
-#include "mrapi.h"
-#include "joint.h"
+#include "interfaglobal.h"
 
 class QTimer;
 

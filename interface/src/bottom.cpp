@@ -10,7 +10,9 @@ using std::vector;
 using std::sort;
 
 #define LHDEBUG 0
-#define BOTTOM_UPDATE_INTEVAL 50000000
+#define BOTTOM_UPDATE_INTEVAL 10000
+
+uint16_t sys_redu_ratio = 0;
 
 Bottom::Bottom(QWidget *parent) :
     QWidget(parent),
@@ -228,13 +230,13 @@ void Bottom::on_cmbID_currentIndexChanged(int index)
         str = "M17";
         break;
     case MODEL_TYPE_M17V2:
-        str = "M17V2";
+        str = "M17E";
         break;
     case MODEL_TYPE_M20:
         str = "M20";
         break;
     case MODEL_TYPE_M20V2:
-        str = "M20V2";
+        str = "M20E";
         break;
     case MODEL_TYPE_LIFT:
         str = "LIFT";
@@ -243,8 +245,8 @@ void Bottom::on_cmbID_currentIndexChanged(int index)
         break;
     }
     uiBottom->typeLabel->setText(str);
-    jointGet(SYS_REDU_RATIO, 2, (Joint *)joint, (void *)&data16, 50, NULL);
-    uiBottom->ratioLabel->setText(QString::number(data16, 10));
+    jointGet(SYS_REDU_RATIO, 2, (Joint *)joint, (void *)&sys_redu_ratio, 50, NULL);
+    uiBottom->ratioLabel->setText(QString::number(sys_redu_ratio, 10));
     jointGet(SYS_FW_VERSION, 2, (Joint *)joint, (void *)&data16, 50, NULL);
     uiBottom->firmLabel->setText(QString::number(data16, 10));
 }
@@ -262,6 +264,7 @@ void Bottom::slotTimerBottomDone()
 
 void Bottom::on_btnQuit_clicked()
 {
+//    QMessageBox::information(this, tr("information"), tr("该功能还没实现！"), QMessageBox::Ok);
 //    return ;
 #if 0 // 必须先给空才能清空内存,因为有定时器一直在用joint
     int re = jointDown(joint);

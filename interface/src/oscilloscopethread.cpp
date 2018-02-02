@@ -154,7 +154,7 @@ void OscilloScopeThread::getData()
     if (JT->joint == NULL) {
         return;
     }
-//    qDebug() << QDateTime::currentDateTime().toString("hh:mm:ss:zzz");
+    qDebug() << QDateTime::currentDateTime().toString("hh:mm:ss:zzz");
 
     // 示波器绘制曲线使能开启
     if (paintArea->EnableScope) {
@@ -252,13 +252,8 @@ void OscilloScopeThread::getData()
 //                        cout << temp << endl;
                         temp *= 60; // rpm
                         temp /= 65536; // rpm
-
-//
-                        uint16_t data16 = 0;
-//                        jointGetSYS_REDU_RATIO(JT->joint, &data16, 50, NULL);
-                        jointGet(SYS_REDU_RATIO, 2, (Joint *)JT->joint, (void *)&data16, 50, NULL);
-//                        qDebug("fdfd%d",data16);
-                        temp /= data16;
+//                        qDebug() << "sys_redu_ratio" << sys_redu_ratio;
+                        temp /= sys_redu_ratio;
                         break;
                     }
                     case SCP_TAGPOS_L://showItems[2].Item://TAG_POSITION_L:

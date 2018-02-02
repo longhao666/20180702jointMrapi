@@ -348,7 +348,7 @@ int32_t __stdcall jointDown(JOINT_HANDLE h) {
     if (pJoint == jointStack[i])
       break;
   }
-  if(i == jointNbr) {
+  if(i == jointNbr) {
   	return -1;
   }
   for (; i < jointNbr - 1; i++) {

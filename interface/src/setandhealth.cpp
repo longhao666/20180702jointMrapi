@@ -66,7 +66,7 @@ void SetAndHealth::health()
         timer = new QTimer(this);
 //        connect(timer,QTimer::timeout(),this,SetAndHealth::myTimerSlot());
         connect(timer,SIGNAL(timeout()),this,SLOT(myTimerSlot()));
-        timer->start(MONITOR_INTEVAL);
+//        timer->start(MONITOR_INTEVAL);
     }
     this->myTimerSlot();
 }

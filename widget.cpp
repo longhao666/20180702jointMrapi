@@ -6,6 +6,7 @@
 #include "interface/SetAndHealth/setandhealth.h"
 #include "interface/OscilloScope/oscilloscope.h"
 
+
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Widget)

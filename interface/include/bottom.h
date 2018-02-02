@@ -1,10 +1,9 @@
 #ifndef BOTTOM_H
 #define BOTTOM_H
 
-#include "mrapi.h"
-#include "joint.h"
-#include <QWidget>
 
+#include <QWidget>
+#include "interfaglobal.h"
 
 class QTimer;
 

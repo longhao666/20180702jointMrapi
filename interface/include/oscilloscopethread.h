@@ -26,8 +26,7 @@
 #include "qwt_plot_panner.h"
 #include "paintarea.h"
 #include "showqueue.h"
-#include "mrapi.h"
-#include "joint.h"
+#include "interfaglobal.h"
 
 #define GET_VALUE_INTEVAL   10  // 示波器采样周期（ms）
 #define UPDATE_SHOW_INTEVAL 10  // 示波器刷新显示周期（ms）

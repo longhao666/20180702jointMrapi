@@ -77,7 +77,11 @@
      <height>651</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout"/>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+   </layout>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

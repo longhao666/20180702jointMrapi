@@ -5,6 +5,7 @@
 
 #define LHDEBUG 0
 
+
 Pid::Pid(QWidget *parent) :
     QWidget(parent),
     uiPid(new Ui::Pid)
@@ -46,6 +47,28 @@ void Pid::showSEVPID()
 #if LHDEBUG
     qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
 #endif
+#if 1 // 两个一样的,只是这个看起来更爽
+    uint16_t data16[11] = {0};
+    for(int i=S_CURRENT_P;i<S_POSITION_DS+1;i++) {
+        jointGet(i, 2, (Joint *)joint, (void *)&data16[i - S_CURRENT_P], 50, NULL);
+    }
+    // 不行,最多只能16位,超出了有些就会出错,不会得到数据
+//    jointGet(S_CURRENT_P, 22, (Joint *)joint, (void *)&data16, 200, NULL);
+    uiPid->CUR_PSpinBox->setValue(data16[0]);
+    uiPid->CUR_ISpinBox->setValue(data16[1]);
+    uiPid->CUR_DSpinBox->setValue(data16[2]);
+    uiPid->SPD_PSpinBox->setValue(data16[3]);
+    uiPid->SPD_ISpinBox->setValue(data16[4]);
+    uiPid->SPD_DSpinBox->setValue(data16[5]);
+    uiPid->SPD_DSSpinBox->setValue(data16[6]);
+    uiPid->POS_PSpinBox->setValue(data16[7]);
+    uiPid->POS_ISpinBox->setValue(data16[8]);
+    uiPid->POS_DSpinBox->setValue(data16[9]);
+    uiPid->POS_DSSpinBox->setValue(data16[10]);
+//    for(int i=0;i<11;i++) {
+//        qDebug() << "data16[" << i << "]" << "=" << data16[i];
+//    }
+#elif 0
     if(!joint) {
         return ;
     }
@@ -83,6 +106,7 @@ void Pid::showSEVPID()
     // 电流环D
     jointGet(S_CURRENT_D, 2, (Joint *)joint, (void *)&data16, 50, NULL);
     uiPid->CUR_DSpinBox->setValue(data16);
+#endif
 }
 
 void Pid::showMPID()
@@ -93,6 +117,25 @@ void Pid::showMPID()
     if(!joint) {
         return ;
     }
+#if 1 // 两个一样的,只是这个看起来更爽
+    uint16_t data16[11] = {0};
+    for(int i=M_CURRENT_P;i<M_POSITION_DS+1;i++) {
+        jointGet(i, 2, (Joint *)joint, (void *)&data16[i - M_CURRENT_P], 50, NULL);
+    }
+    // 不行,最多只能16位,超出了有些就会出错
+//    jointGet(M_CURRENT_P, 22, (Joint *)joint, (void *)&data16, 500, NULL);
+    uiPid->CUR_PSpinBox->setValue(data16[0]);
+    uiPid->CUR_ISpinBox->setValue(data16[1]);
+    uiPid->CUR_DSpinBox->setValue(data16[2]);
+    uiPid->SPD_PSpinBox->setValue(data16[3]);
+    uiPid->SPD_ISpinBox->setValue(data16[4]);
+    uiPid->SPD_DSpinBox->setValue(data16[5]);
+    uiPid->SPD_DSSpinBox->setValue(data16[6]);
+    uiPid->POS_PSpinBox->setValue(data16[7]);
+    uiPid->POS_ISpinBox->setValue(data16[8]);
+    uiPid->POS_DSpinBox->setValue(data16[9]);
+    uiPid->POS_DSSpinBox->setValue(data16[10]);
+#elif 0
     uint16_t data16 = 0;
     // 位置环P
     jointGet(M_POSITION_P, 2, (Joint *)joint, (void *)&data16, 50, NULL);
@@ -127,6 +170,7 @@ void Pid::showMPID()
     // 电流环D
     jointGet(M_CURRENT_D, 2, (Joint *)joint, (void *)&data16, 50, NULL);
     uiPid->CUR_DSpinBox->setValue(data16);
+#endif
 }
 
 void Pid::showLPID()
@@ -137,6 +181,25 @@ void Pid::showLPID()
     if(!joint) {
         return ;
     }
+#if 1 // 两个一样的,只是这个看起来更爽
+    uint16_t data16[11] = {0};
+    for(int i=L_CURRENT_P;i<L_POSITION_DS+1;i++) {
+        jointGet(i, 2, (Joint *)joint, (void *)&data16[i - L_CURRENT_P], 50, NULL);
+    }
+    // 不行,最多只能读16位,超出了有些就会出错
+//    jointGet(L_CURRENT_P, 22, (Joint *)joint, (void *)data16, 500, NULL);
+    uiPid->CUR_PSpinBox->setValue(data16[0]);
+    uiPid->CUR_ISpinBox->setValue(data16[1]);
+    uiPid->CUR_DSpinBox->setValue(data16[2]);
+    uiPid->SPD_PSpinBox->setValue(data16[3]);
+    uiPid->SPD_ISpinBox->setValue(data16[4]);
+    uiPid->SPD_DSpinBox->setValue(data16[5]);
+    uiPid->SPD_DSSpinBox->setValue(data16[6]);
+    uiPid->POS_PSpinBox->setValue(data16[7]);
+    uiPid->POS_ISpinBox->setValue(data16[8]);
+    uiPid->POS_DSpinBox->setValue(data16[9]);
+    uiPid->POS_DSSpinBox->setValue(data16[10]);
+#elif 0
     uint16_t data16 = 0;
     // 位置环P
     jointGet(L_POSITION_P, 2, (Joint *)joint, (void *)&data16, 50, NULL);
@@ -167,10 +230,11 @@ void Pid::showLPID()
     uiPid->CUR_PSpinBox->setValue(data16);
     // 电流环I
     jointGet(L_CURRENT_I, 2, (Joint *)joint, (void *)&data16, 50, NULL);
-    uiPid->CUR_ISpinBox->setValue(data16);
+    uiPid->CUR_PSpinBox->setValue(data16);
     // 电流环D
     jointGet(L_CURRENT_D, 2, (Joint *)joint, (void *)&data16, 50, NULL);
     uiPid->CUR_DSpinBox->setValue(data16);
+#endif
 }
 
 void Pid::showMaxLimit()
@@ -201,6 +265,13 @@ void Pid::showMaxLimit()
     jointGet(LIT_MAX_POSITION_H, 2, (Joint *)joint, (void *)&data16, 50, NULL);
     uiPid->maxPosHLineEdit->setText(QString::number(data16, 10));
 }
+
+#if 0
+void Pid::setPidValue(uint8_t index, void *data)
+{
+    jointSet(index, 2, (Joint *)joint, (void *)&data, 50, NULL);
+}
+#endif
 
 void Pid::on_POS_PSpinBox_editingFinished()
 {
