@@ -2,8 +2,7 @@
 #define PID_H
 
 #include <QWidget>
-#include "mrapi.h"
-#include "joint.h"
+#include "interfaglobal.h"
 
 namespace Ui {
 class Pid;
@@ -14,7 +13,7 @@ class Pid : public QWidget
     Q_OBJECT
 
 public:
-    JOINT_HANDLE joint;
+//    JOINT_HANDLE joint;
 
 public:
     Pid(QWidget *parent = 0);

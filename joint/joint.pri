@@ -9,13 +9,13 @@ SOURCES += \
     $$PWD/src/module.c \
 
 
-#HEADERS += \
-#    $$PWD/include/can_driver.h \
-#    $$PWD/include/joint.h \
-#    $$PWD/include/logger.h \
-#    $$PWD/include/master.h \
-#    $$PWD/include/module.h \
-#    $$PWD/include/mrapi.h \
+HEADERS += \
+    $$PWD/include/can_driver.h \
+    $$PWD/include/joint.h \
+    $$PWD/include/logger.h \
+    $$PWD/include/master.h \
+    $$PWD/include/module.h \
+    $$PWD/include/mrapi.h \
 
 SOURCES += \
     $$PWD/pcan_basic/pcan_basic.c \
