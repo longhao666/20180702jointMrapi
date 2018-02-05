@@ -23,13 +23,11 @@ public:
 
 public slots:
     void waitingForWidgetReady();
-    void dealIDChanged(int newID);
+    void slotFreeUpMemory();
 
 signals:
     void cmbIDChanged(int ID);
-    void cmbIDJoint();
     void signalRecoverBotton();
-
 
 private:
     void updateEnableDriver();
@@ -46,7 +44,6 @@ private slots:
     void on_btnSave_clicked();
     void on_cmbID_currentIndexChanged(int index);
     void slotTimerBottomDone();
-
     void on_btnQuit_clicked();
 
 private:
