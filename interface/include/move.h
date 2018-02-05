@@ -14,7 +14,7 @@ class Move : public QWidget
 {
     Q_OBJECT
 public:
-    JOINT_HANDLE joint;
+//    JOINT_HANDLE joint;
 
 public:
     Move(QWidget *parent = 0);
@@ -23,6 +23,7 @@ public:
 public slots:
     void moveInit(int ID);
     void ClickStopButton();
+    void slotRecoverButton();
 
 private:
     void txtBiasChangeManualSlider();
@@ -42,16 +43,14 @@ private slots:
     void on_manualMin_editingFinished();
     void on_manualMax_editingFinished();
 
+
 private:
     Ui::Move *uiMove;
-
     bool enableRun;
     QTimer *timerMove;
     double bias;
     double frequency;
     double amplitude;
-
-
 };
 
 #endif // MOVE_H

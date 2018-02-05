@@ -21,7 +21,7 @@ class OscilloScope : public QWidget {
   Q_OBJECT
 
 public:
-    JOINT_HANDLE joint;
+//    JOINT_HANDLE joint;
 
 public:
   explicit OscilloScope(QWidget *parent = 0);
@@ -47,6 +47,7 @@ private slots:
   void on_rlSPDPushButton_clicked();
   void on_rlCURPushButton_clicked();
   void on_scopeEnablePushButton_clicked();
+#if 0
   void on_offset_POSLineEdit_editingFinished();
   void on_offset_SPDLineEdit_editingFinished();
   void on_offset_CURLineEdit_editingFinished();
@@ -54,6 +55,7 @@ private slots:
   void on_srComboBox_currentIndexChanged(int index);
   void on_crComboBox_currentIndexChanged(int index);
   void on_ScanFrequencyComboBox_currentIndexChanged(int index);
+#endif
   void updatePlot();
 
 private:

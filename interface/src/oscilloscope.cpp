@@ -1,6 +1,5 @@
 #include "oscilloscope.h"
 #include "ui_oscilloscope.h"
-//#include "joint.h"
 
 #define LHDEBUG 0
 
@@ -14,8 +13,6 @@ OscilloScope::OscilloScope(QWidget* parent) :
     qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
 #endif
     uiOscilloScope->setupUi(this);
-    joint = NULL;
-
 }
 
 OscilloScope::~OscilloScope()
@@ -29,7 +26,7 @@ void OscilloScope::OscilloScopeInitialize(int ID)
 #if 0
     qDebug() << "ID = " << ID << "OscilloScopeInitialize";
 #endif
-    joint = jointSelect(ID);
+//    joint = jointSelect(ID);
     // initialize Oscilloscope - related content
     tgPOSPushButtonOn = "background-color: rgb(";
     tgPOSPushButtonOn += QString::number(TGPOS_RGB_R) + ',' + QString::number(TGPOS_RGB_G) + ',' + QString::number(TGPOS_RGB_B) + ");";
@@ -132,7 +129,7 @@ void OscilloScope::OscilloScopeInitialize(int ID)
         curveTgSPD->attach(uiOscilloScope->plotSPD);
     }
 
-    if (joint == NULL) {
+    if (m_joint == NULL) {
         return;
     }
     // 开启新线程准备显示示波器曲线
@@ -142,14 +139,13 @@ void OscilloScope::OscilloScopeInitialize(int ID)
 
     uint16_t data_L = 0;
     // 记录对象标志MASK的初始化
-    jointGet(SCP_MASK, 2, (Joint *)joint, (void *)&data_L, 50, NULL);
+    jointGet(SCP_MASK, 2, (Joint *)m_joint, (void *)&data_L, 50, NULL);
     osthread->paintArea->Mask = data_L;
 #if 1
     qDebug() << "data_L" << data_L << "osthread->paintArea->Mask" << osthread->paintArea->Mask;
 #endif
     //参数表中的“记录时间间隔（对10kHZ的分频值）”显示到测量条件选项卡中的对应控件里
-    //    jointGetSCP_REC_TIM(joint, &data_L, 100, NULL);
-    jointGet(SCP_REC_TIM, 2, (Joint *)joint, (void *)&data_L, 50, NULL);
+    jointGet(SCP_REC_TIM, 2, (Joint *)m_joint, (void *)&data_L, 50, NULL);
     osthread->paintArea->ScanFrequency = data_L;
 #if 1
     qDebug() << "data_L" << data_L << "osthread->paintArea->ScanFrequency" << osthread->paintArea->ScanFrequency;
@@ -245,7 +241,7 @@ void OscilloScope::updatePlot() {
 
 void OscilloScope::on_tgPOSPushButton_clicked()
 {
-    if (osthread == NULL) {
+    if (osthread == NULL || m_joint == NULL) {
         return;
     }
     if (osthread->paintArea->showItems[2].IsCheck == true) { // showItems[2] is tgPOS
@@ -258,7 +254,7 @@ void OscilloScope::on_tgPOSPushButton_clicked()
 
 void OscilloScope::on_tgSPDPushButton_clicked()
 {
-    if (osthread == NULL) {
+    if (osthread == NULL || m_joint == NULL) {
         return;
     }
     if (osthread->paintArea->showItems[1].IsCheck == true) { // showItems[1] is tgSPD
@@ -271,7 +267,7 @@ void OscilloScope::on_tgSPDPushButton_clicked()
 
 void OscilloScope::on_tgCURPushButton_clicked()
 {
-    if (osthread == NULL) {
+    if (osthread == NULL || m_joint == NULL) {
         return;
     }
     if (osthread->paintArea->showItems[0].IsCheck == true) { // showItems[0] is tgCUR
@@ -284,7 +280,7 @@ void OscilloScope::on_tgCURPushButton_clicked()
 
 void OscilloScope::on_rlPOSPushButton_clicked()
 {
-    if (osthread == NULL) {
+    if (osthread == NULL || m_joint == NULL) {
         return;
     }
     if (osthread->paintArea->showItems[5].IsCheck == true) { // showItems[5] is rlPOS
@@ -297,7 +293,7 @@ void OscilloScope::on_rlPOSPushButton_clicked()
 
 void OscilloScope::on_rlSPDPushButton_clicked()
 {
-    if (osthread == NULL) {
+    if (osthread == NULL || m_joint == NULL) {
         return;
     }
     if (osthread->paintArea->showItems[4].IsCheck == true) { // showItems[4] is rlSPD
@@ -310,7 +306,7 @@ void OscilloScope::on_rlSPDPushButton_clicked()
 
 void OscilloScope::on_rlCURPushButton_clicked()
 {
-    if (osthread == NULL) {
+    if (osthread == NULL || m_joint == NULL) {
         return;
     }
     if (osthread->paintArea->showItems[3].IsCheck == true) { // showItems[3] is rlCUR
@@ -323,7 +319,7 @@ void OscilloScope::on_rlCURPushButton_clicked()
 
 void OscilloScope::on_scopeEnablePushButton_clicked()
 {
-    if (osthread == NULL) {
+    if (osthread == NULL || m_joint == NULL) {
         return;
     }
     if (osthread->paintArea->EnableScope) {
@@ -335,6 +331,7 @@ void OscilloScope::on_scopeEnablePushButton_clicked()
     }
 }
 
+#if 0
 void OscilloScope::on_offset_POSLineEdit_editingFinished()
 {
     if (osthread == NULL) {
@@ -453,3 +450,4 @@ void OscilloScope::on_ScanFrequencyComboBox_currentIndexChanged(int index)
     uint16_t data16 = osthread->paintArea->ScanFrequency;
     jointSet(SCP_REC_TIM, 2, (Joint *)joint, (void *)&data16, 50,NULL);
 }
+#endif

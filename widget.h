@@ -24,6 +24,9 @@ public:
 signals:
     void widgetAllReady();
 
+private slots:
+    void jointQuit();
+
 private:
     Ui::Widget *ui;
     Bottom *bottom;
