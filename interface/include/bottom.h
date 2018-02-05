@@ -15,7 +15,7 @@ class Bottom : public QWidget
 {
     Q_OBJECT
 public:
-    JOINT_HANDLE joint;
+//    JOINT_HANDLE joint;
 
 public:
     Bottom(QWidget *parent = 0);
@@ -27,7 +27,8 @@ public slots:
 
 signals:
     void cmbIDChanged(int ID);
-    void cmbIDJoint(JOINT_HANDLE joint);
+    void cmbIDJoint();
+    void signalRecoverBotton();
 
 
 private:
@@ -35,6 +36,7 @@ private:
     void updateWorkModePushButton();
     void updateConnected();
     void updateIfError();
+    void updatecmbID();
 
 private slots:
     void on_btnUpdateID_clicked();

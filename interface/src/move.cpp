@@ -23,7 +23,6 @@ Move::Move(QWidget *parent) :
     qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
 #endif
     uiMove->setupUi(this);
-    joint = NULL;
     timerMove = NULL;
     bias = 0.0;
     amplitude = 0.0;
@@ -55,15 +54,12 @@ void Move::moveInit(int ID)
 #if 0
     qDebug() << "ID = " << ID;
 #endif
-    joint = jointSelect(ID);
-    if(!joint) {
+    if(!m_joint) {
         qDebug("===================empty=======================");
         return ;
     }
-    uint16_t work;
-//    jointGetMode(joint, &work, 50, NULL);
-    jointGet(TAG_WORK_MODE, 4, (Joint *)joint, (void *)&work, 50, NULL);
-    uiMove->cmbWorkMode->setCurrentIndex(work);
+    jointGet(TAG_WORK_MODE, 4, (Joint *)m_joint, (void *)&tag_work_mode, 50, NULL);
+    uiMove->cmbWorkMode->setCurrentIndex(tag_work_mode);
     // 防止没有调用on_cmbWorkMode_currentIndexChanged()，强制运行下列2个函数
     // 工作模式更新bias
     workModeUpdatetxtBias();
@@ -90,7 +86,7 @@ void Move::txtBiasChangeManualSlider()
 #if LHDEBUG
     qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
 #endif
-    if(!joint) {
+    if(!m_joint) {
         return ;
     }
     int workMode = uiMove->cmbWorkMode->currentIndex();
@@ -114,7 +110,7 @@ void Move::txtBiasChangeManualSlider()
 
 void Move::workModeUpdatetxtBias()
 {
-    if(!joint) {
+    if(!m_joint) {
         return ;
     }
     int32_t data32 = 0;
@@ -137,7 +133,7 @@ void Move::workModeUpdatetxtBias()
         break;
     }
     case MODE_POSITION: {
-        jointGet(SYS_POSITION_L, 4, (Joint *)joint, (void *)&data32, 50, NULL);
+        jointGet(SYS_POSITION_L, 4, (Joint *)m_joint, (void *)&data32, 50, NULL);
         float tempf = (float)(data32);
         tempf = tempf * 360.0/65536.0;
         uiMove->txtBias->setValue(tempf); // 由当前实际位置更新手动控制中的偏移量
@@ -157,11 +153,11 @@ void Move::setMoveValue(int value)
     switch(workMode) // 不同控制模式，控制指令不同
     {
     case MODE_OPEN: {
-        jointSet(TAG_OPEN_PWM, 2, (Joint *)joint, (void *)&value, 50, NULL);
+        jointSet(TAG_OPEN_PWM, 2, (Joint *)m_joint, (void *)&value, 50, NULL);
         break;
     }
     case MODE_CURRENT: {
-        jointSet(TAG_CURRENT_L, 4, (Joint *)joint, (void *)&value, 50, NULL);
+        jointSet(TAG_CURRENT_L, 4, (Joint *)m_joint, (void *)&value, 50, NULL);
         break;
     }
     case MODE_SPEED: {
@@ -171,18 +167,18 @@ void Move::setMoveValue(int value)
 #if 0
         qDebug() << "count = " << count << "udata16 = " << udata16 << "value = " << value;
 #endif
-        jointGet(SYS_REDU_RATIO, 2, (Joint *)joint, (void *)&udata16, 50, NULL);
+        jointGet(SYS_REDU_RATIO, 2, (Joint *)m_joint, (void *)&udata16, 50, NULL);
         value *= udata16;
         value = value * 65536.0/60.0;
 #if 0
         qDebug() << "count = " << count << "udata16 = " << udata16 << "value = " << value;
 #endif
-        jointSet(TAG_SPEED_L, 4, (Joint *)joint, (void *)&value, 50, NULL);
+        jointSet(TAG_SPEED_L, 4, (Joint *)m_joint, (void *)&value, 50, NULL);
         break;
     }
     case MODE_POSITION: {
         value = value * 65536/360;
-        jointSet(TAG_POSITION_L, 4, (Joint *)joint, (void *)&value, 50, NULL);
+        jointSet(TAG_POSITION_L, 4, (Joint *)m_joint, (void *)&value, 50, NULL);
         break;
     }
     default: break;
@@ -197,7 +193,7 @@ void Move::on_txtBias_editingFinished()
 #if LHDEBUG
     qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
 #endif 
-    if(!joint) {
+    if(!m_joint) {
         qDebug("===================empty=======================");
         return ;
     }
@@ -225,11 +221,12 @@ void Move::on_cmbWorkMode_currentIndexChanged(int index)
 #if LHDEBUG
     qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
 #endif
-    if(!joint) {
+    if(!m_joint) {
         return ;
     }
     // 更改工作模式
-    jointSetMode(joint, index, 50, NULL);
+    jointSetMode(m_joint, index, 50, NULL);
+    jointGet(TAG_WORK_MODE, 4, (Joint *)m_joint, (void *)&tag_work_mode, 50, NULL);
     // 工作模式更新bias
     workModeUpdatetxtBias();
     // bias更新滑块
@@ -315,7 +312,7 @@ void Move::on_manualSlider_valueChanged(int value)
 
 void Move::slotTimeMoveDone()
 {
-    if(!joint) {
+    if(!m_joint) {
 #if 0
         qDebug() <<__FILE__<<__LINE__<<__func__;
         qDebug("===================empty===================");
@@ -394,7 +391,7 @@ void Move::slotTimeMoveDone()
 
 void Move::on_confirmButton_clicked()
 {
-    if(!joint) {
+    if(!m_joint) {
         return ;
     }
     if(!enableRun) {
@@ -421,13 +418,21 @@ void Move::on_manualMax_editingFinished()
     txtBiasChangeManualSlider();
 }
 
+void Move::slotRecoverButton()
+{
+    uiMove->confirmButton->setText("Click to run");
+    uiMove->confirmButton->setStyleSheet("");
+    uiMove->stopButton->setText("Stop");
+    uiMove->stopButton->setStyleSheet("");
+}
+
 /**
  * @brief Move::on_stopButton_clicked
  * 停止运动,关闭定时器
  */
 void Move::on_stopButton_clicked()
 {
-    if(!joint) {
+    if(!m_joint) {
         return ;
     }
     if(enableRun) {
@@ -443,28 +448,25 @@ void Move::on_stopButton_clicked()
     switch(workMode) // Different WorkMode Different Stop way
     {
     case MODE_OPEN: {
-//        jointSetTAG_OPEN_PWM(joint, 0, 50, NULL);
         int value = 0;
-        jointSet(TAG_OPEN_PWM, 2, (Joint *)joint, (void *)&value, 50, NULL);
+        jointSet(TAG_OPEN_PWM, 2, (Joint *)m_joint, (void *)&value, 50, NULL);
         break;
     }
     case MODE_CURRENT: {
-//        jointSetTAG_CURRENT_L(joint, 0, 50, NULL);
         int value = 0;
-        jointSet(TAG_CURRENT_L, 4, (Joint *)joint, (void *)&value, 50, NULL);
+        jointSet(TAG_CURRENT_L, 4, (Joint *)m_joint, (void *)&value, 50, NULL);
         break;
     }
     case MODE_SPEED: {
         // 猜测:按暂停后速度会马上变为0,应该是这里设置为0后,模块里面反应后减速一直到模块停下
-//        jointSetTAG_SPEED_L(joint, 0, 50, NULL);
         int value = 0;
-        jointSet(TAG_SPEED_L, 4, (Joint *)joint, (void *)&value, 50, NULL);
+        jointSet(TAG_SPEED_L, 4, (Joint *)m_joint, (void *)&value, 50, NULL);
         break;
     }
     case MODE_POSITION: {
         int value = 0;
-        jointGet(SYS_POSITION_L, 4, (Joint *)joint, (void *)&value, 50, NULL);
-        jointSet(TAG_POSITION_L, 4, (Joint *)joint, (void *)&value, 50, NULL);
+        jointGet(SYS_POSITION_L, 4, (Joint *)m_joint, (void *)&value, 50, NULL);
+        jointSet(TAG_POSITION_L, 4, (Joint *)m_joint, (void *)&value, 50, NULL);
         break;
     }
     default:
