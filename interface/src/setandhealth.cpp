@@ -4,7 +4,7 @@
 #include <QDebug>
 
 #define LHDEBUG 0
-#define MONITOR_INTEVAL 1000         // 监视器更新周期（ms）
+#define MONITOR_INTEVAL 500         // 监视器更新周期（ms）
 
 SetAndHealth::SetAndHealth(QWidget *parent) :
     QWidget(parent),
@@ -55,8 +55,10 @@ void SetAndHealth::set()
       uiSetAndHealth->ENonPPushButton->setStyleSheet("color:red");
     }
     // 读取ID 不能放在定时器里面,不然一直更新
-    jointGet(SYS_ID, 2, (Joint *)m_joint, (void *)&data16, 50, NULL);
-    uiSetAndHealth->IDLineEdit->setText(QString::number(data16));
+//    jointGet(SYS_ID, 2, (Joint *)m_joint, (void *)&data16, 50, NULL);
+//    uiSetAndHealth->IDLineEdit->setText(QString::number(data16));
+    // 全局变量,不需要读取了
+    uiSetAndHealth->IDLineEdit->setText(QString::number(sys_id));
 }
 
 void SetAndHealth::health()
@@ -176,6 +178,9 @@ void SetAndHealth::on_clearErrorButton_clicked()
 
 void SetAndHealth::on_updateButton_clicked()
 {
+    if(!m_joint) {
+        return ;
+    }
     uint16_t udata16[15] = {0};
     /*
 #define SYS_ERROR             0x04    //错误代码 9

@@ -99,8 +99,8 @@ void Bottom::updateWorkModePushButton()
 
 void Bottom::updateConnected()
 {
-    QString connectedPushButtonStr = "background-color:green";
-    uiBottom->connectedPushButton->setStyleSheet(connectedPushButtonStr);
+//    QString connectedPushButtonStr = "background-color:green";
+    uiBottom->connectedPushButton->setStyleSheet("background-color:green");
 }
 
 void Bottom::updateIfError()
@@ -215,18 +215,22 @@ void Bottom::on_cmbID_currentIndexChanged(int index)
     if(!m_joint) {
         return ;
     }
-    int m_jointID = uiBottom->cmbID->currentText().toInt();
-    m_joint = jointSelect(m_jointID);
+    sys_id = uiBottom->cmbID->currentText().toInt();
+    m_joint = jointSelect(sys_id);
 #if 1
-    qDebug() << "m_jointID  = " << m_jointID << "; index = " << index << "; on_cmbID_currentIndexChanged";
+    qDebug() << "sys_id  = " << sys_id << "; index = " << index << "; on_cmbID_currentIndexChanged";
     qDebug() << "m_joint = " << m_joint;
 #endif
+    emit cmbIDChanged(sys_id);
     emit signalRecoverBotton();
-    emit cmbIDChanged(m_jointID);
     if(!timerBottom) {
         timerBottom = new QTimer(this);
         connect(timerBottom, SIGNAL(timeout()), this, SLOT(slotTimerBottomDone()));
         timerBottom->start(BOTTOM_UPDATE_INTEVAL);
+    }
+//    qDebug() << "timerBottom->isActive() =" << timerBottom->isActive();
+    if(!timerBottom->isActive()) {
+        timerBottom->start();
     }
     slotTimerBottomDone();
     uint16_t data16 = 0;
@@ -292,6 +296,9 @@ void Bottom::on_btnQuit_clicked()
         qDebug() << " failed! ";
     }
 #endif
+    if(!m_joint) {
+        return ;
+    }
     int re = QMessageBox::information(this, tr(" 提示 "), tr(" 确定要退出吗? "), QMessageBox::Yes, QMessageBox::No);
     if(re == QMessageBox::Yes) {
         qDebug() << "re " << re << "yes";
@@ -306,6 +313,11 @@ void Bottom::on_btnQuit_clicked()
 //            qDebug() << "m_joint_copy =" << m_joint_copy << "; re =" << re << "; on_btnQuit_clicked";
         }
         emit signalRecoverBotton();
+        uiBottom->enableDriverPushButton_2->setStyleSheet("");
+        uiBottom->workModePushButton->setStyleSheet("");
+        uiBottom->connectedPushButton->setStyleSheet("");
+        uiBottom->ifErrorPushButton->setStyleSheet("");
+        timerBottom->stop();
     }else if(re == QMessageBox::No){
         qDebug() << "re " << re << "no";
     }else {

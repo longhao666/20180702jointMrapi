@@ -58,12 +58,19 @@ void OscilloScope::OscilloScopeInitialize(int ID)
 
     // 初始化qwt plot
     uiOscilloScope->plot->enableAxis(QwtPlot::xBottom , false);
+//    uiOscilloScope->plot->enableAxis(QwtPlot::yLeft , false);
+//    uiOscilloScope->plot->enableAxis(QwtPlot::yRight , true);
     uiOscilloScope->plot->setCanvasBackground(Qt::gray);
+//    uiOscilloScope->plot->setAxisScale(QwtPlot::yLeft, 0, 2000, 100);
     uiOscilloScope->plot->setTitle("Current Curve");
     uiOscilloScope->plotSPD->enableAxis(QwtPlot::xBottom , false);
+//    uiOscilloScope->plotSPD->enableAxis(QwtPlot::yLeft , false);
+//    uiOscilloScope->plotSPD->enableAxis(QwtPlot::yRight , true);
     uiOscilloScope->plotSPD->setCanvasBackground(Qt::gray);
     uiOscilloScope->plotSPD->setTitle("Speed Curve");
     uiOscilloScope->plotPOS->enableAxis(QwtPlot::xBottom , false);
+//    uiOscilloScope->plotPOS->enableAxis(QwtPlot::yLeft , false);
+//    uiOscilloScope->plotPOS->enableAxis(QwtPlot::yRight , true);
     uiOscilloScope->plotPOS->setCanvasBackground(Qt::gray);
     uiOscilloScope->plotPOS->setTitle("Position Curve");
 
@@ -78,6 +85,7 @@ void OscilloScope::OscilloScopeInitialize(int ID)
         grid->setPen(Qt::black, 0, Qt::DotLine);
         grid->attach(uiOscilloScope->plotPOS);
     }
+#if 0 // 你既然说没有就给屏了吧
     if (plotMag == NULL) { // 暂时没用
         plotMag = new QwtPlotMagnifier(uiOscilloScope->plot->canvas());
         plotMag->setAxisEnabled(QwtPlot::xBottom , false);
@@ -89,7 +97,7 @@ void OscilloScope::OscilloScopeInitialize(int ID)
         plotPOSMag->setAxisEnabled(QwtPlot::xBottom , false);
         plotPOSMag->setAxisEnabled(QwtPlot::yLeft , false);
     }
-
+#endif
     if (curveRlCUR == NULL) {
         curveRlCUR = new QwtPlotCurve();
         curveRlCUR->setPen(QColor(RLCUR_RGB_R,RLCUR_RGB_G,RLCUR_RGB_B), 3 );

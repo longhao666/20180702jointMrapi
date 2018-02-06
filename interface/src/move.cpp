@@ -47,7 +47,7 @@ void Move::moveInit(int ID)
     uiMove->confirmButton->setText("Click to run"); // 此外还有一处设置了setTex
     uiMove->stopButton->setStyleSheet("color:red");
     if(!timerMove) {
-        timerMove = new QTimer;
+        timerMove = new QTimer(this);
         connect(timerMove, SIGNAL(timeout()), this, SLOT(slotTimeMoveDone()));
         //        timerMove->start(MOTION_CONTROL_INTEVAL); // 暂时不启动
     }
@@ -90,7 +90,7 @@ void Move::txtBiasChangeManualSlider()
         return ;
     }
     int workMode = uiMove->cmbWorkMode->currentIndex();
-    double bias = uiMove->txtBias->text().toDouble();
+    float bias = uiMove->txtBias->text().toFloat();
     float min = uiMove->manualMin->text().toFloat();
     float max = uiMove->manualMax->text().toFloat();
     if(MODE_POSITION == workMode) { // 如果是位置控制模式，滑块极值相应改变
@@ -147,38 +147,31 @@ void Move::workModeUpdatetxtBias()
     on_txtBias_editingFinished();
 }
 
-void Move::setMoveValue(int value)
+void Move::setMoveValue(double value)
 {
     int workMode = uiMove->cmbWorkMode->currentIndex();
     switch(workMode) // 不同控制模式，控制指令不同
     {
     case MODE_OPEN: {
-        jointSet(TAG_OPEN_PWM, 2, (Joint *)m_joint, (void *)&value, 50, NULL);
+        int temp = (int)value;
+        jointSet(TAG_OPEN_PWM, 2, (Joint *)m_joint, (void *)&temp, 50, NULL);
         break;
     }
     case MODE_CURRENT: {
-        jointSet(TAG_CURRENT_L, 4, (Joint *)m_joint, (void *)&value, 50, NULL);
+        int temp = (int)value;
+        jointSet(TAG_CURRENT_L, 4, (Joint *)m_joint, (void *)&temp, 50, NULL);
         break;
     }
     case MODE_SPEED: {
-        static int count = 0;
-        count++;
-        uint16_t udata16 = 0;
-#if 0
-        qDebug() << "count = " << count << "udata16 = " << udata16 << "value = " << value;
-#endif
-        jointGet(SYS_REDU_RATIO, 2, (Joint *)m_joint, (void *)&udata16, 50, NULL);
-        value *= udata16;
-        value = value * 65536.0/60.0;
-#if 0
-        qDebug() << "count = " << count << "udata16 = " << udata16 << "value = " << value;
-#endif
-        jointSet(TAG_SPEED_L, 4, (Joint *)m_joint, (void *)&value, 50, NULL);
+        value *= sys_redu_ratio;
+        int temp = value * 65536/60;
+//        qDebug() << sys_redu_ratio << "value = " << temp;
+        jointSet(TAG_SPEED_L, 4, (Joint *)m_joint, (void *)&temp, 50, NULL);
         break;
     }
     case MODE_POSITION: {
-        value = value * 65536/360;
-        jointSet(TAG_POSITION_L, 4, (Joint *)m_joint, (void *)&value, 50, NULL);
+        int temp  = (int)(value * 65536/360);
+        jointSet(TAG_POSITION_L, 4, (Joint *)m_joint, (void *)&temp, 50, NULL);
         break;
     }
     default: break;
@@ -304,7 +297,7 @@ void Move::on_manualSlider_valueChanged(int value)
     float min = uiMove->manualMin->text().toFloat();
     float max = uiMove->manualMax->text().toFloat();
     if(uiMove->manualSlider->hasFocus()) {
-        double bias = min + (max - min) * value / 100;
+        float bias = min + (max - min) * value / 100;
         uiMove->txtBias->setValue(bias);
         on_txtBias_editingFinished();
     }
@@ -423,7 +416,13 @@ void Move::slotRecoverButton()
     uiMove->confirmButton->setText("Click to run");
     uiMove->confirmButton->setStyleSheet("");
     uiMove->stopButton->setText("Stop");
-    uiMove->stopButton->setStyleSheet("");
+    uiMove->stopButton->setStyleSheet("color:red");
+//    qDebug() << "timerMove =" << timerMove;
+//    qDebug() << "timerMove->isActive() =" << timerMove->isActive();
+    if(timerMove->isActive()) {
+        this->timerMove->stop();
+    }
+    this->enableRun = false;
 }
 
 /**
@@ -467,6 +466,7 @@ void Move::on_stopButton_clicked()
         int value = 0;
         jointGet(SYS_POSITION_L, 4, (Joint *)m_joint, (void *)&value, 50, NULL);
         jointSet(TAG_POSITION_L, 4, (Joint *)m_joint, (void *)&value, 50, NULL);
+//        this->setMoveValue(value);
         break;
     }
     default:
