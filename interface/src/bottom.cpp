@@ -29,6 +29,12 @@ Bottom::Bottom(QWidget *parent) :
     uiBottom->setupUi(this);
     timerBottom = NULL;
     isCANInitialSucceed = false;
+#if 0
+    uiBottom->enableDriverPushButton_2->setEnabled(false);
+    uiBottom->ifErrorPushButton->setEnabled(false);
+    uiBottom->connectedPushButton->setEnabled(false);
+    uiBottom->workModePushButton->setEnabled(false);
+#endif
 }
 
 Bottom::~Bottom()
@@ -199,12 +205,21 @@ void Bottom::on_btnFlash_clicked()
 
 void Bottom::on_btnLoad_clicked()
 {
+#if 0
     QMessageBox::information(this, tr("information"), tr("该功能还没实现！"), QMessageBox::Ok);
+#endif
+    emit signalBtnLoadClicked();
 }
 
 void Bottom::on_btnSave_clicked()
 {
+#if 0
     QMessageBox::information(this, tr("information"), tr("该功能还没实现！"), QMessageBox::Ok);
+#endif
+    if(!m_joint) {
+        return ;
+    }
+    emit signalBtnSaveClicked();
 }
 
 void Bottom::on_cmbID_currentIndexChanged(int index)

@@ -359,7 +359,7 @@ void OscilloScope::on_offset_CURLineEdit_editingFinished()
     if (osthread == NULL) {
         return;
     }
-    osthread->paintArea->currentOffset = uiOscilloScope->offset_CURLineEdit->text().toDouble();
+    osthread->paintArea->currentOffset =  ->offset_CURLineEdit->text().toDouble();
 }
 
 void OscilloScope::on_prComboBox_currentIndexChanged(int index)
@@ -457,3 +457,18 @@ void OscilloScope::on_ScanFrequencyComboBox_currentIndexChanged(int index)
     jointSet(SCP_REC_TIM, 2, (Joint *)joint, (void *)&data16, 50,NULL);
 }
 #endif
+
+void OscilloScope::on_yLeft_clicked()
+{
+//    qDebug() << uiOscilloScope->yLeft->isCheckable();
+//    qDebug() << uiOscilloScope->yLeft->isChecked();
+    if(uiOscilloScope->yLeft->isChecked()) {
+        uiOscilloScope->plot->enableAxis(QwtPlot::yLeft, true);
+        uiOscilloScope->plotSPD->enableAxis(QwtPlot::yLeft, true);
+        uiOscilloScope->plotPOS->enableAxis(QwtPlot::yLeft, true);
+    }else {
+        uiOscilloScope->plot->enableAxis(QwtPlot::yLeft, false);
+        uiOscilloScope->plotSPD->enableAxis(QwtPlot::yLeft, false);
+        uiOscilloScope->plotPOS->enableAxis(QwtPlot::yLeft, false);
+    }
+}

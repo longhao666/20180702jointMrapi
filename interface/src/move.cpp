@@ -27,6 +27,11 @@ Move::Move(QWidget *parent) :
     bias = 0.0;
     amplitude = 0.0;
     frequency = 0.0;
+#ifdef LHRELEASE
+    uiMove->waveModeCombo->setEnabled(false);
+    uiMove->frequencyLineEdit->setEnabled(false);
+    uiMove->AmplitudeLineEdit->setEnabled(false);
+#endif
 }
 
 Move::~Move()
@@ -43,6 +48,7 @@ void Move::moveInit(int ID)
     qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
 #endif
     // 定义运动控制为关
+    Q_UNUSED(ID);
     enableRun = false;
     uiMove->confirmButton->setText("Click to run"); // 此外还有一处设置了setTex
     uiMove->stopButton->setStyleSheet("color:red");
@@ -149,6 +155,9 @@ void Move::workModeUpdatetxtBias()
 
 void Move::setMoveValue(double value)
 {
+#if 0
+    qDebug() << "===========" << value << "=====" << frequency << amplitude << "void Move::setMoveValue";
+#endif
     int workMode = uiMove->cmbWorkMode->currentIndex();
     switch(workMode) // 不同控制模式，控制指令不同
     {
@@ -249,6 +258,7 @@ void Move::on_waveModeCombo_currentIndexChanged(int index)
         on_frequencyLineEdit_editingFinished();
         uiMove->AmplitudeLineEdit->setEnabled(true);
         uiMove->AmplitudeLineEdit->setText("20");
+        on_AmplitudeLineEdit_editingFinished();
         break;
     case MODE_SQUARE:
         uiMove->frequencyLineEdit->setEnabled(true);
@@ -256,6 +266,7 @@ void Move::on_waveModeCombo_currentIndexChanged(int index)
         on_frequencyLineEdit_editingFinished();
         uiMove->AmplitudeLineEdit->setEnabled(true);
         uiMove->AmplitudeLineEdit->setText("20");
+        on_AmplitudeLineEdit_editingFinished();
         break;
     case MODE_TRIANGLE:
         uiMove->frequencyLineEdit->setEnabled(true);
@@ -327,8 +338,10 @@ void Move::slotTimeMoveDone()
             break;
         }
         case MODE_SQUARE: { // 方波时根据选定频率发送，经过半个周期变换一次方向，所以是乘500
+//            qDebug() << "MODE_SQUARE";
             double time = s_iCount * MOTION_CONTROL_INTEVAL;
             if (time >= 500.0 / frequency) {
+                qDebug() << "MODE_SQUARE";
                 static bool s_bHigh = false;
                 s_iCount = 0;
                 s_bHigh = !s_bHigh;

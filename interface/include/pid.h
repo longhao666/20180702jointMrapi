@@ -21,6 +21,8 @@ public:
 
 public slots:
     void pidInit(int ID);
+    void slotBtnSaveClicked();
+    void slotBtnLoadClicked();
 
 private:
     void showSEVPID();
