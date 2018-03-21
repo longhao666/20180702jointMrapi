@@ -28,6 +28,8 @@ public slots:
 signals:
     void cmbIDChanged(int ID);
     void signalRecoverBotton();
+    void signalBtnSaveClicked();
+    void signalBtnLoadClicked();
 
 private:
     void updateEnableDriver();

@@ -15,6 +15,10 @@ SetAndHealth::SetAndHealth(QWidget *parent) :
 #endif
     uiSetAndHealth->setupUi(this);
     timer = NULL;
+#ifdef LHRELEASE
+    uiSetAndHealth->errorTextEdit->setEnabled(false);
+#endif
+
 }
 
 SetAndHealth::~SetAndHealth()
@@ -139,6 +143,7 @@ void SetAndHealth::on_setZeroPushButton_clicked()
     if(workMode == 3) {
         emit ZeroPositionSeted();
         jointSetZero(m_joint,100,NULL);
+        QMessageBox::information(this, tr(" NOTE "), tr("  succeed，please load flash  \n\n"), QMessageBox::Ok);
         emit ZeroPositionSeted();
     }
 }

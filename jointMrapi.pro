@@ -6,6 +6,8 @@
 
 QT       += core gui
 
+QT += charts
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = qt-lh-mrapi
@@ -17,6 +19,10 @@ DESTDIR = ./Bin
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES += LHRELEASE
+DEFINES += LHTEST
+DEFINES += LHDEBUG
+
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -45,3 +51,5 @@ include(./interface/interface.pri)
 #LIBS += -L$$PWD/joint/PCANBasic/x64 -lPCANBasic
 #DEPENDPATH += -L$$PWD/joint/PCANBasic/x64 -lPCANBasic
 #LIBS += -L$$PWD/joint/PCANBasic/x64/VC_LIB -lPCANBasic
+
+

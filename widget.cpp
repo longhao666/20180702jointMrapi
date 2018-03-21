@@ -40,7 +40,8 @@ Widget::Widget(QWidget *parent) :
     connect(setAndHealth, &SetAndHealth::ZeroPositionSeted, move, &Move::ClickStopButton);
     connect(bottom, &Bottom::signalRecoverBotton, move, &Move::slotRecoverButton);
     connect(this, SIGNAL(destroyed(QObject*)), bottom, SLOT(slotFreeUpMemory()));
-
+    connect(bottom, &Bottom::signalBtnSaveClicked, pid, &Pid::slotBtnSaveClicked);
+    connect(bottom, &Bottom::signalBtnLoadClicked, pid, &Pid::slotBtnLoadClicked);
 //    emit widgetAllReady();
 
 }

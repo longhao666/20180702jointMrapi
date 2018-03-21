@@ -311,10 +311,8 @@ JOINT_HANDLE __stdcall jointSelect(uint16_t id) {
 }
 
 JOINT_HANDLE __stdcall jointUp(uint16_t joindId, uint8_t masterId) {
-	int32_t res;
-    static int count = 0;
-    count++;
-	Joint* pJoint = jointConstruct(joindId, (canSend_t)hCansendHandler[masterId]);
+    int32_t res;
+    Joint* pJoint = jointConstruct(joindId, (canSend_t)hCansendHandler[masterId]);
 	if (jointNbr >= MAX_JOINTS) {
 		ELOG("Joint Stack Overflow");
 		return NULL;

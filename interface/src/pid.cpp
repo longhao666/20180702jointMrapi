@@ -1,7 +1,9 @@
 #include "pid.h"
 #include "ui_pid.h"
 #include <QDebug>
-
+#include <QFileDialog>
+#include <QFile>
+#include <QMessageBox>
 
 #define LHDEBUG 0
 
@@ -14,6 +16,12 @@ Pid::Pid(QWidget *parent) :
     qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
 #endif
     uiPid->setupUi(this);
+#if LHRELEASE
+    uiPid->maxPosHLineEdit->setEnabled(false);
+    uiPid->minPosHLineEdit->setEnabled(false);
+    uiPid->maxPosLLineEdit->setEnabled(false);
+    uiPid->minPosLLineEdit->setEnabled(false);
+#endif
 }
 
 Pid::~Pid()
@@ -26,6 +34,7 @@ Pid::~Pid()
 
 void Pid::pidInit(int ID)
 {
+    Q_UNUSED(ID);
 #if LHDEBUG
     qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
 
@@ -634,4 +643,224 @@ void Pid::on_maxCurLineEdit_editingFinished()
     uint16_t value = uiPid->maxCurLineEdit->text().toShort();
     // 设置最大的电流
     jointSet(LIT_MAX_CURRENT, 2, (Joint *)m_joint, (void *)&value, 50, NULL);
+}
+
+void Pid::slotBtnSaveClicked()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("保存PID数据"), tr("./PID.dat"), tr("PID数据文件(*.pid)"));
+    if(fileName == "") {
+        return ;
+    }
+    QFile file(fileName);
+    if(! file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug("%s", file.errorString().toStdString().c_str());
+    }
+    int oldIndex = uiPid->adjustGroupComboBox->currentIndex();
+    uiPid->adjustGroupComboBox->setCurrentIndex(0);
+    QString data = uiPid->POS_PSpinBox->text() + tr("\n")
+            + uiPid->POS_ISpinBox->text() + tr("\n")
+            + uiPid->POS_DSpinBox->text() + tr("\n")
+            + uiPid->POS_DSSpinBox->text() + tr("\n")
+            + uiPid->SPD_PSpinBox->text() + tr("\n")
+            + uiPid->SPD_ISpinBox->text() + tr("\n")
+            + uiPid->SPD_DSpinBox->text() + tr("\n")
+            + uiPid->SPD_DSSpinBox->text() + tr("\n")
+            + uiPid->CUR_PSpinBox->text() + tr("\n")
+            + uiPid->CUR_ISpinBox->text() + tr("\n")
+            + uiPid->CUR_DSpinBox->text() + tr("\n"); // 第1组完成，需要切换组别
+    uiPid->adjustGroupComboBox->setCurrentIndex(1);
+    data += uiPid->POS_PSpinBox->text() + tr("\n")
+            + uiPid->POS_ISpinBox->text() + tr("\n")
+            + uiPid->POS_DSpinBox->text() + tr("\n")
+            + uiPid->POS_DSSpinBox->text() + tr("\n")
+            + uiPid->SPD_PSpinBox->text() + tr("\n")
+            + uiPid->SPD_ISpinBox->text() + tr("\n")
+            + uiPid->SPD_DSpinBox->text() + tr("\n")
+            + uiPid->SPD_DSSpinBox->text() + tr("\n")
+            + uiPid->CUR_PSpinBox->text() + tr("\n")
+            + uiPid->CUR_ISpinBox->text() + tr("\n")
+            + uiPid->CUR_DSpinBox->text() + tr("\n"); // 第2组完成，需要切换组别
+    uiPid->adjustGroupComboBox->setCurrentIndex(2);
+    data += uiPid->POS_PSpinBox->text() + tr("\n")
+            + uiPid->POS_ISpinBox->text() + tr("\n")
+            + uiPid->POS_DSpinBox->text() + tr("\n")
+            + uiPid->POS_DSSpinBox->text() + tr("\n")
+            + uiPid->SPD_PSpinBox->text() + tr("\n")
+            + uiPid->SPD_ISpinBox->text() + tr("\n")
+            + uiPid->SPD_DSpinBox->text() + tr("\n")
+            + uiPid->SPD_DSSpinBox->text() + tr("\n")
+            + uiPid->CUR_PSpinBox->text() + tr("\n")
+            + uiPid->CUR_ISpinBox->text() + tr("\n")
+            + uiPid->CUR_DSpinBox->text() + tr("\n"); // 第3组完成,需要返回组别
+    uiPid->adjustGroupComboBox->setCurrentIndex(oldIndex);
+    QByteArray ba = data.toLatin1();
+    file.write(ba);
+    file.close();
+    QMessageBox::information(this, tr("NOTE"), tr("PID value has saved"));
+}
+
+void Pid::slotBtnLoadClicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("打开PID数据文件"), "./", tr("PID数据文件(*.dat)"));
+    if(fileName == "") {
+        return ;
+    }
+    QFile file(fileName);
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug("%s", file.errorString().toStdString().c_str());
+    }
+    file.seek(0);
+    QTextStream in(&file);
+    int count = 0;
+    int oldIndex = uiPid->adjustGroupComboBox->currentIndex();
+    qDebug() << oldIndex;
+    while (! in.atEnd()) {
+        QString line = in.readLine();
+#ifdef LHTEST
+        qDebug() << "=============" << line;
+#endif
+        switch (count) {
+        case 0:
+            uiPid->adjustGroupComboBox->setCurrentIndex(0);
+            uiPid->POS_PSpinBox->setValue(line.toInt());
+            on_POS_PSpinBox_editingFinished();
+            break;
+        case 1:
+            uiPid->POS_ISpinBox->setValue(line.toInt());
+            on_POS_ISpinBox_editingFinished();
+            break;
+        case 2:
+            uiPid->POS_DSpinBox->setValue(line.toInt());
+            on_POS_DSpinBox_editingFinished();
+            break;
+        case 3:
+            uiPid->POS_DSSpinBox->setValue(line.toInt());
+            on_POS_DSSpinBox_editingFinished();
+            break;
+        case 4:
+            uiPid->SPD_PSpinBox->setValue(line.toInt());
+            on_SPD_PSpinBox_editingFinished();
+            break;
+        case 5:
+            uiPid->SPD_ISpinBox->setValue(line.toInt());
+            on_SPD_ISpinBox_editingFinished();
+            break;
+        case 6:
+            uiPid->SPD_DSpinBox->setValue(line.toInt());
+            on_SPD_DSpinBox_editingFinished();
+            break;
+        case 7:
+            uiPid->SPD_DSSpinBox->setValue(line.toInt());
+            on_SPD_DSSpinBox_editingFinished();
+            break;
+        case 8:
+            uiPid->CUR_PSpinBox->setValue(line.toInt());
+            on_CUR_PSpinBox_editingFinished();
+            break;
+        case 9:
+            uiPid->CUR_ISpinBox->setValue(line.toInt());
+            on_CUR_ISpinBox_editingFinished();
+            break;
+        case 10:
+            uiPid->CUR_DSpinBox->setValue(line.toInt());
+            on_CUR_DSpinBox_editingFinished();
+            break;
+        case 11:
+            uiPid->adjustGroupComboBox->setCurrentIndex(1);
+            uiPid->POS_PSpinBox->setValue(line.toInt());
+            on_POS_PSpinBox_editingFinished();
+            break;
+        case 12:
+            uiPid->POS_ISpinBox->setValue(line.toInt());
+            on_POS_ISpinBox_editingFinished();
+            break;
+        case 13:
+            uiPid->POS_DSpinBox->setValue(line.toInt());
+            on_POS_DSpinBox_editingFinished();
+            break;
+        case 14:
+            uiPid->POS_DSSpinBox->setValue(line.toInt());
+            on_POS_DSSpinBox_editingFinished();
+            break;
+        case 15:
+            uiPid->SPD_PSpinBox->setValue(line.toInt());
+            on_SPD_PSpinBox_editingFinished();
+            break;
+        case 16:
+            uiPid->SPD_ISpinBox->setValue(line.toInt());
+            on_SPD_ISpinBox_editingFinished();
+            break;
+        case 17:
+            uiPid->SPD_DSpinBox->setValue(line.toInt());
+            on_SPD_DSpinBox_editingFinished();
+            break;
+        case 18:
+            uiPid->SPD_DSSpinBox->setValue(line.toInt());
+            on_SPD_DSSpinBox_editingFinished();
+            break;
+        case 19:
+            uiPid->CUR_PSpinBox->setValue(line.toInt());
+            on_CUR_PSpinBox_editingFinished();
+            break;
+        case 20:
+            uiPid->CUR_ISpinBox->setValue(line.toInt());
+            on_CUR_ISpinBox_editingFinished();
+            break;
+        case 21:
+            uiPid->CUR_DSpinBox->setValue(line.toInt());
+            on_CUR_DSpinBox_editingFinished();
+            break;
+        case 22:
+            uiPid->adjustGroupComboBox->setCurrentIndex(2);
+            uiPid->POS_PSpinBox->setValue(line.toInt());
+            on_POS_PSpinBox_editingFinished();
+            break;
+        case 23:
+            uiPid->POS_ISpinBox->setValue(line.toInt());
+            on_POS_ISpinBox_editingFinished();
+            break;
+        case 24:
+            uiPid->POS_DSpinBox->setValue(line.toInt());
+            on_POS_DSpinBox_editingFinished();
+            break;
+        case 25:
+            uiPid->POS_DSSpinBox->setValue(line.toInt());
+            on_POS_DSSpinBox_editingFinished();
+            break;
+        case 26:
+            uiPid->SPD_PSpinBox->setValue(line.toInt());
+            on_SPD_PSpinBox_editingFinished();
+            break;
+        case 27:
+            uiPid->SPD_ISpinBox->setValue(line.toInt());
+            on_SPD_ISpinBox_editingFinished();
+            break;
+        case 28:
+            uiPid->SPD_DSpinBox->setValue(line.toInt());
+            on_SPD_DSpinBox_editingFinished();
+            break;
+        case 29:
+            uiPid->SPD_DSSpinBox->setValue(line.toInt());
+            on_SPD_DSSpinBox_editingFinished();
+            break;
+        case 30:
+            uiPid->CUR_PSpinBox->setValue(line.toInt());
+            on_CUR_PSpinBox_editingFinished();
+            break;
+        case 31:
+            uiPid->CUR_ISpinBox->setValue(line.toInt());
+            on_CUR_ISpinBox_editingFinished();
+            break;
+        case 32:
+            uiPid->CUR_DSpinBox->setValue(line.toInt());
+            on_CUR_DSpinBox_editingFinished();
+            break;
+        default:
+            break;
+        }
+        count++;
+    }
+    file.close();
+    uiPid->adjustGroupComboBox->setCurrentIndex(oldIndex);
+    QMessageBox::information(this, tr("NOTE"), "PID value has loaded");
 }
