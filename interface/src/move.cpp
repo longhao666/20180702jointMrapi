@@ -65,7 +65,11 @@ void Move::moveInit(int ID)
         return ;
     }
     jointGet(TAG_WORK_MODE, 4, (Joint *)m_joint, (void *)&tag_work_mode, 50, NULL);
-    uiMove->cmbWorkMode->setCurrentIndex(tag_work_mode);
+    if(tag_work_mode == 0) {
+        tag_work_mode++;
+    }
+//    qDebug() << "tag_work_mode = " << tag_work_mode;
+    uiMove->cmbWorkMode->setCurrentIndex(tag_work_mode - 1);
     // 防止没有调用on_cmbWorkMode_currentIndexChanged()，强制运行下列2个函数
     // 工作模式更新bias
     workModeUpdatetxtBias();
@@ -95,7 +99,7 @@ void Move::txtBiasChangeManualSlider()
     if(!m_joint) {
         return ;
     }
-    int workMode = uiMove->cmbWorkMode->currentIndex();
+    int workMode = uiMove->cmbWorkMode->currentIndex() + 1;
     float bias = uiMove->txtBias->text().toFloat();
     float min = uiMove->manualMin->text().toFloat();
     float max = uiMove->manualMax->text().toFloat();
@@ -120,7 +124,7 @@ void Move::workModeUpdatetxtBias()
         return ;
     }
     int32_t data32 = 0;
-    int workMode = uiMove->cmbWorkMode->currentIndex();
+    int workMode = uiMove->cmbWorkMode->currentIndex() + 1;
     switch(workMode) { // 工作模式修改后，修改txtBias
     case MODE_OPEN:
         uiMove->txtBias->setValue(0); // 由当前目标PWM更新手动控制中的偏移量
@@ -158,7 +162,7 @@ void Move::setMoveValue(double value)
 #if 0
     qDebug() << "===========" << value << "=====" << frequency << amplitude << "void Move::setMoveValue";
 #endif
-    int workMode = uiMove->cmbWorkMode->currentIndex();
+    int workMode = uiMove->cmbWorkMode->currentIndex() + 1;
     switch(workMode) // 不同控制模式，控制指令不同
     {
     case MODE_OPEN: {
@@ -199,7 +203,7 @@ void Move::on_txtBias_editingFinished()
         qDebug("===================empty=======================");
         return ;
     }
-    int workMode = uiMove->cmbWorkMode->currentIndex();
+    int workMode = uiMove->cmbWorkMode->currentIndex() + 1;
     if(MODE_POSITION != workMode) { // 若是位置控制，则不限制bias
         float max = uiMove->manualMax->text().toFloat();
         float min = uiMove->manualMin->text().toFloat();
@@ -227,7 +231,7 @@ void Move::on_cmbWorkMode_currentIndexChanged(int index)
         return ;
     }
     // 更改工作模式
-    jointSetMode(m_joint, index, 50, NULL);
+    jointSetMode(m_joint, index+1, 50, NULL);
     jointGet(TAG_WORK_MODE, 4, (Joint *)m_joint, (void *)&tag_work_mode, 50, NULL);
     // 工作模式更新bias
     workModeUpdatetxtBias();
@@ -456,7 +460,7 @@ void Move::on_stopButton_clicked()
     }else {
         return ;
     }
-    const int workMode = uiMove->cmbWorkMode->currentIndex();
+    const int workMode = uiMove->cmbWorkMode->currentIndex() + 1;
     switch(workMode) // Different WorkMode Different Stop way
     {
     case MODE_OPEN: {
