@@ -13,7 +13,7 @@ OscilloScopeThread::OscilloScopeThread(void *t, QObject *parent) :
     //
     paintArea = new PaintArea();
     for (vector<ShowItem>::iterator iItem = paintArea->showItems.begin(); iItem != paintArea->showItems.end(); ++iItem) {
-        iItem._Ptr->sq.MaxLength = 700; // grid一格100有7格
+        iItem->sq.MaxLength = 700; // grid一格100有7格
     }
     for (unsigned int i = 0; i < paintArea->showItems.size(); i++) {
         paintArea->showItems[i].sq.FillZero();

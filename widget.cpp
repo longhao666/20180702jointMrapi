@@ -38,9 +38,10 @@ Widget::Widget(QWidget *parent) :
 //    connect(this, &Widget::widgetAllReady, bottom, &Bottom::waitingForWidgetReady);
     connect(this, SIGNAL(destroyed(QObject*)), move, SLOT(ClickStopButton()));
     connect(setAndHealth, &SetAndHealth::ZeroPositionSeted, move, &Move::ClickStopButton);
-    connect(bottom, &Bottom::cmbIDJoint, this, &Widget::jointQuit);
     connect(bottom, &Bottom::signalRecoverBotton, move, &Move::slotRecoverButton);
-
+    connect(this, SIGNAL(destroyed(QObject*)), bottom, SLOT(slotFreeUpMemory()));
+    connect(bottom, &Bottom::signalBtnSaveClicked, pid, &Pid::slotBtnSaveClicked);
+    connect(bottom, &Bottom::signalBtnLoadClicked, pid, &Pid::slotBtnLoadClicked);
 //    emit widgetAllReady();
 
 }
@@ -48,12 +49,4 @@ Widget::Widget(QWidget *parent) :
 Widget::~Widget()
 {
     delete ui;
-}
-
-void Widget::jointQuit()
-{
-    m_joint_copy = m_joint;
-    m_joint = NULL;
-    int re = jointDown(m_joint_copy);
-    qDebug() << "m_joint =" << m_joint << re;
 }

@@ -58,6 +58,8 @@ private slots:
 #endif
   void updatePlot();
 
+  void on_yLeft_clicked();
+
 private:
   void SetValue(double value);
   Ui::OscilloScope *uiOscilloScope;

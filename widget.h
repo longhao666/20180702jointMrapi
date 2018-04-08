@@ -23,9 +23,7 @@ public:
 
 signals:
     void widgetAllReady();
-
-private slots:
-    void jointQuit();
+    void signalFreeUpMemory();
 
 private:
     Ui::Widget *ui;

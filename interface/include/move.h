@@ -28,7 +28,7 @@ public slots:
 private:
     void txtBiasChangeManualSlider();
     void workModeUpdatetxtBias();
-    void setMoveValue(int value);
+    void setMoveValue(double value);
 
 private slots:
     void on_txtBias_editingFinished();

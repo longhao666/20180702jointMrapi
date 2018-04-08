@@ -25,7 +25,7 @@ void PaintArea::resizeEvent(QResizeEvent *event)
 //    }
 
     for (vector<ShowItem>::iterator iItem = this->showItems.begin(); iItem != this->showItems.end(); ++iItem) {
-        iItem._Ptr->sq.MaxLength = this->width();
+        iItem->sq.MaxLength = this->width();
     }
     for (unsigned int i = 0; i < showItems.size(); i++) {
         showItems[i].sq.FillZero();
