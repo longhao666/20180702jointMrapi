@@ -35,11 +35,6 @@
    </property>
    <item>
     <property name="text">
-     <string>OPEN</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
      <string>CUR</string>
     </property>
    </item>
