@@ -12,7 +12,6 @@ SOURCES += \
 #    $$PWD/src/thread_linux.c \
     $$PWD/src/thread_win.c \
 
-
 HEADERS += \
     $$PWD/src/mrapi.h \
     $$PWD/src/can_driver.h \
@@ -20,7 +19,7 @@ HEADERS += \
     $$PWD/src/logger.h \
     $$PWD/src/master.h \
     $$PWD/src/module.h \
-    $$PWD/src/girpper.h \
+    $$PWD/src/gripper.h \
     $$PWD/src/pcan_basic.h \
 
 INCLUDEPATH += $$PWD/src
