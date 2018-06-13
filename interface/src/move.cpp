@@ -13,6 +13,14 @@
 #define MODE_TRIANGLE   3           // 自动控制之三角波
 #define MOTION_CONTROL_INTEVAL 30   // 运动控制周期（ms）
 
+// Represent the work modes supported by Joint
+//
+#define MODE_OPEN             0       // Open mode
+#define MODE_CURRENT          1       // Current/Torque servo mode
+#define MODE_SPEED            2       // Speed servo mode
+#define MODE_POSITION         3       // Position servo mode
+#define MODE_CYCLESYNC        4       //
+
 
 
 Move::Move(QWidget *parent) :
@@ -230,8 +238,29 @@ void Move::on_cmbWorkMode_currentIndexChanged(int index)
     if(!m_joint) {
         return ;
     }
+    switch (index + 1) {
+    case joint_open:
+        jointSetMode(m_joint, joint_open, 50, NULL);
+        break;
+    case joint_current:
+        jointSetMode(m_joint, joint_current, 50, NULL);
+        break;
+    case joint_speed:
+        jointSetMode(m_joint, joint_speed, 50, NULL);
+        break;
+    case joint_position:
+        jointSetMode(m_joint, joint_position, 50, NULL);
+        break;
+    case joint_cyclesync:
+        jointSetMode(m_joint, joint_cyclesync, 50, NULL);
+        break;
+    default:
+        break;
+    }
+#if 0
     // 更改工作模式
-    jointSetMode(m_joint, index+1, 50, NULL);
+    jointSetMode(m_joint, index + 1, 50, NULL);
+#endif
     jointGet(TAG_WORK_MODE, 4, (Joint *)m_joint, (void *)&tag_work_mode, 50, NULL);
     // 工作模式更新bias
     workModeUpdatetxtBias();

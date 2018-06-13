@@ -7,26 +7,23 @@ SOURCES += \
     $$PWD/src/logger.c \
     $$PWD/src/master.c \
     $$PWD/src/module.c \
+    $$PWD/src/gripper.c \
+    $$PWD/src/pcan_basic.c \
+#    $$PWD/src/thread_linux.c \
+    $$PWD/src/thread_win.c \
 
 
 HEADERS += \
-    $$PWD/include/can_driver.h \
-    $$PWD/include/joint.h \
-    $$PWD/include/logger.h \
-    $$PWD/include/master.h \
-    $$PWD/include/module.h \
-    $$PWD/include/mrapi.h \
+    $$PWD/src/mrapi.h \
+    $$PWD/src/can_driver.h \
+    $$PWD/src/joint.h \
+    $$PWD/src/logger.h \
+    $$PWD/src/master.h \
+    $$PWD/src/module.h \
+    $$PWD/src/girpper.h \
+    $$PWD/src/pcan_basic.h \
 
-SOURCES += \
-    $$PWD/pcan_basic/pcan_basic.c \
-#    $$PWD/pcan_basic/thread_linux.c \
-    $$PWD/pcan_basic/thread_win.c \
-
-HEADERS += \
-    $$PWD/pcan_basic/pcan_basic.h \
-
-INCLUDEPATH += $$PWD/include
-INCLUDEPATH += $$PWD/pcan_basic
+INCLUDEPATH += $$PWD/src
 
 INCLUDEPATH += $$PWD/PCANBasic/Include
 LIBS += -L$$PWD/PCANBasic/x64 -lPCANBasic

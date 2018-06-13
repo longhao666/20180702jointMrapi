@@ -32,24 +32,14 @@ DEFINES += LHDEBUG
 
 SOURCES += \
         main.cpp \
-        widget.cpp
+        widget.cpp \
 
 HEADERS += \
         widget.h \
-    interfaglobal.h
+    interfaglobal.h \
 
 FORMS += \
         widget.ui
 
 include(./joint/joint.pri)
 include(./interface/interface.pri)
-
-#INCLUDEPATH += $$PWD/interface/qwt/include/
-#LIBS += -L$$PWD/interface/qwt/lib -lqwt
-
-#INCLUDEPATH += $$PWD/joint/PCANBasic/Include
-#LIBS += -L$$PWD/joint/PCANBasic/x64 -lPCANBasic
-#DEPENDPATH += -L$$PWD/joint/PCANBasic/x64 -lPCANBasic
-#LIBS += -L$$PWD/joint/PCANBasic/x64/VC_LIB -lPCANBasic
-
-

@@ -1,25 +1,21 @@
 #include <stdlib.h>
+#include <sys/timeb.h>
 #include <signal.h>
 #include <math.h>
 #include <string.h>
 #include <Windows.h>
 
-#include "pcan_basic.h"
+#include "can_driver.h"
 
-
-//// Timer is the same when different can device is open
-static struct timeval last_sig;
-
-HANDLE timer = NULL;
-DWORD timebuffer;
-HANDLE timer_thread = NULL;
-volatile int stop_timer = 1;
+HANDLE LifeGuardThread;
+CRITICAL_SECTION LifeGuard_mutex;
+int32_t lifeGuardFlag = 0;
+uint16_t Num_Module = 0;
+uint16_t LifeGuard_Slienttime[MAX_JOINTS+MAX_GRIPPERS];
+uint16_t LifeGuard_ID[MAX_JOINTS + MAX_GRIPPERS];
+Callback_t LifeGuard_CB[MAX_JOINTS + MAX_GRIPPERS];
 
 int32_t recTaskInitFlag = 0;
-
-TIMEVAL timerVal = MS_TO_TIMEVAL(1); //default 5ms
-
-void setTimer(TIMEVAL value);
 
 void usleep(__int64 usec)
 {
@@ -34,100 +30,11 @@ void usleep(__int64 usec)
     CloseHandle(timer);
 }
 
-void setTimerInterval(uint32_t t) {
-    timerVal = t;
-    setTimer(timerVal);
-}
-
-static void (*canTxPeriodic)(DWORD* tv) = NULL;
-/// It's a cycle timer
-int TimerThreadLoop(LPVOID arg)
-{
-	ILOG("Go into TimerThreadLoop");
-    while(!stop_timer)
-    {
-        WaitForSingleObject(timer, INFINITE);
-		setTimer(timerVal);
-		if(stop_timer)
-            break;
-		//        EnterMutex();
-        timebuffer = GetTickCount();
-        canTxPeriodic(&timebuffer);
-//        LeaveMutex();
-    }
-	ILOG("Go out of TimerThreadLoop");
-	return 0;
-}
-
-void StartTimerLoop(int32_t hz, void* periodCall)
-{
-	unsigned long timer_thread_id;
-	LARGE_INTEGER liDueTime;
-	float val = 0;
-
-	if (stop_timer == 0) {
-		ILOG("Timer has already been started");
-		return;
-	}
-	
-	liDueTime.QuadPart = 0;
-
-	stop_timer = 0;
-	canTxPeriodic = periodCall;
-    timer = CreateWaitableTimer(NULL, FALSE, NULL);
-    if(NULL == timer)
-    {
-        ILOG("CreateWaitableTimer failed (%d)", GetLastError());
-    }
-
-    // Take first absolute time ref in milliseconds.
-    timebuffer = GetTickCount();
-
-    timer_thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)TimerThreadLoop, NULL, 0, &timer_thread_id);
-	if (hz != -1) {
-		val = 1000000.0f / (float)hz;
-	}
-	//setTimerInterval(round(val));
-}
-
-void StopTimerLoop(void)//TimerCallback_t exitfunction)
-{
-    stop_timer = 1;
-    setTimer(0);
-    if(WaitForSingleObject(timer_thread, 1000) == WAIT_TIMEOUT)
-    {
-        TerminateThread(timer_thread, -1);
-    }
-    CloseHandle(timer);
-    CloseHandle(timer_thread);
-}
-
-#define maxval(a,b) ((a>b)?a:b)
-void setTimer(TIMEVAL value) //us
-{
-    if(value == TIMEVAL_MAX)
-        CancelWaitableTimer(timer);
-    else
-    {
-        LARGE_INTEGER liDueTime;
-
-        /* arg 2 of SetWaitableTimer take 100 ns interval */
-        liDueTime.QuadPart = ((long long) (-1) * value * 10);
-        //MSG("SetTimer(%llu)\n", value);
-
-        if (!SetWaitableTimer(timer, &liDueTime, 0, NULL, NULL, FALSE))
-        {
-            ILOG("SetWaitableTimer failed (%d)", GetLastError());
-        }
-    }
-}
-
-
 void canReceiveLoop_signal(int sig)
 {
 }
 /* We assume that ReceiveLoop_task_proc is always the same */
-static void (*canRxInterruptISR)(Message* msg) = NULL;
+static void (*canRxInterruptISR)(CAN_HANDLE h, Message* msg) = NULL;
 /**
  * Enter in realtime and start the CAN receiver loop
  * @param port
@@ -153,15 +60,15 @@ void* canReceiveLoop(void* arg)
     }
 	//Init FLAG is set to avoid message coming while event hasn't set
 	recTaskInitFlag = 1;
-    while (1) {
+    while (recTaskInitFlag) {
         if ( WAIT_OBJECT_0 == WaitForSingleObject(hEvent, INFINITE)) {
 			//first of all, you are creating an auto-reset event, so you don't need to call ResetEvent() on your handle.
 			//ResetEvent(hEvent);
             do {
 				recRet = canReceive_driver(handle, &rxMsg);
 				EnterCriticalSection(&CanThread_mutex);
-                if (canRxInterruptISR)
-                    canRxInterruptISR(&rxMsg);
+                if ((recRet == 1) && canRxInterruptISR)
+                    canRxInterruptISR(handle, &rxMsg);
 				LeaveCriticalSection(&CanThread_mutex);
 			} while (recRet == 1);
 			if (recRet == 2) {
@@ -172,6 +79,7 @@ void* canReceiveLoop(void* arg)
 			}
         }
     }
+   DeleteCriticalSection(&CanThread_mutex);
 
     return NULL;
 }
@@ -195,7 +103,7 @@ void CreateReceiveTask(CAN_HANDLE handle, TASK_HANDLE* Thread, void* ReceiveLoop
 
 void DestroyReceiveTask(TASK_HANDLE* Thread)
 {
- //   DeleteCriticalSection(&CanThread_mutex);
+	recTaskInitFlag = 0;
 	if (WaitForSingleObject(*Thread, 1000) == WAIT_TIMEOUT)
 	{
 		TerminateThread(*Thread, -1);
@@ -206,5 +114,88 @@ void DestroyReceiveTask(TASK_HANDLE* Thread)
 void WaitReceiveTaskEnd(TASK_HANDLE* Thread) 
 {
 	WaitForSingleObject(*Thread, INFINITE);
+}
+
+void* LifeGuard(void* arg)
+{
+	while (lifeGuardFlag)
+	{
+		usleep(1000);  // 1ms
+		for (uint16_t i = 0; i < Num_Module; i++) {
+			EnterCriticalSection(&LifeGuard_mutex);
+			LifeGuard_Slienttime[i]++;
+			LeaveCriticalSection(&LifeGuard_mutex);
+			if (LifeGuard_Slienttime[i] >= 100) {  // 100ms
+				LifeGuard_CB[i](LifeGuard_ID[i], 0, (void*)&LifeGuard_Slienttime[i]);
+			}
+		}
+
+	}
+	DeleteCriticalSection(&LifeGuard_mutex);
+    return NULL;
+}
+
+void CreateLifeGuardThread()
+{
+	unsigned long thread_id = 0;
+
+	if (lifeGuardFlag == 0)
+	{
+		InitializeCriticalSection(&LifeGuard_mutex);
+		lifeGuardFlag = 1;
+		LifeGuardThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)LifeGuard, (void*)0, 0, &thread_id);
+	}
+}
+
+void DestroyLifeGuardThread()
+{
+	lifeGuardFlag = 0;
+	if (WaitForSingleObject(LifeGuardThread, 1000) == WAIT_TIMEOUT)
+	{
+		TerminateThread(LifeGuardThread, -1);
+	}
+	CloseHandle(LifeGuardThread);
+}
+
+void RegisterLifeGuard(uint16_t moduleId, Callback_t cb)
+{
+	if (Num_Module == MAX_GRIPPERS + MAX_JOINTS) return;
+	EnterCriticalSection(&LifeGuard_mutex);
+	LifeGuard_CB[Num_Module] = cb;
+	LifeGuard_ID[Num_Module] = moduleId;
+	LifeGuard_Slienttime[Num_Module] = 0;
+	LeaveCriticalSection(&LifeGuard_mutex);
+
+	Num_Module++;
+}
+
+void UnregisterLifeGuard(uint16_t moduleId)
+{
+	uint16_t i;
+	for (i = 0; i < Num_Module; i++) {
+		if (LifeGuard_ID[i] == moduleId) break;
+	}
+
+	EnterCriticalSection(&LifeGuard_mutex);
+	for (; i < Num_Module - 1; i++) {  // ÒÆÎ»
+		LifeGuard_CB[i] = LifeGuard_CB[i+1];
+		LifeGuard_ID[i] = LifeGuard_ID[i + 1];
+		LifeGuard_Slienttime[i] = LifeGuard_Slienttime[i + 1];
+	}
+	LeaveCriticalSection(&LifeGuard_mutex);
+
+	Num_Module--;
+}
+
+void ResetLifeGuard(uint16_t moduleId)
+{
+	uint16_t i;
+	EnterCriticalSection(&LifeGuard_mutex);
+	for (i = 0; i < Num_Module; i++) {
+		if (LifeGuard_ID[i] == moduleId) break;
+	}
+
+	LifeGuard_Slienttime[i] = 0;
+	LeaveCriticalSection(&LifeGuard_mutex);
 }
 

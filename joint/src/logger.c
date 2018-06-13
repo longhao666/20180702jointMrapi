@@ -12,19 +12,23 @@ void loggerInit(FILE **fp)
 	GetLocalTime(&sys);
 	sprintf(path, "./%4d%02d%02d-%02d%02d%02d.log", sys.wYear, sys.wMonth, sys.wDay, sys.wHour, sys.wMinute, sys.wSecond);
 #elif defined Linux
-	struct tm *local;
+    struct tm *local;
 	time_t t;
 	t = time(NULL);
 	local = localtime(&t);
-	sprintf(path, "./%4d%02d%02d-%02d%02d%02d.log", local->tm_year+1900, local->tm_mon+1, local->tm_mday, local->tm_hour, local->tm_min, local->tm_sec);
+    mkdir("log", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    sprintf(path, "./log/%4d%02d%02d-%02d%02d%02d.log", local->tm_year+1900, local->tm_mon+1, local->tm_mday, local->tm_hour, local->tm_min, local->tm_sec);
 #endif
-	*fp = fopen(path, "a");
+    *fp = fopen(path, "a");
 	if (*fp == NULL)
 		printf("fopen logfile");
+    fprintf(*fp, "Time            Type  ID    Data\n");
+    fflush(*fp);
+
 #elif LOG_APPEND == 1
 	*fp = stdout;
 #elif LOG_APPEND == 2
-	* fp = stderr;
+    *fp = stderr;
 #endif
 }
 

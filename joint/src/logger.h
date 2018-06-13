@@ -1,10 +1,12 @@
-﻿#ifndef _LOGGER_H_
+#ifndef _LOGGER_H_
 #define _LOGGER_H_
 
 #include <stdio.h>
 #if defined Linux
 #include <unistd.h>
 #include <sys/time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <time.h>
 #elif defined _WINDOWS
 #include <Windows.h>
@@ -12,8 +14,8 @@
 #include "mrapi.h"
 
 #define LOG_MSG_ON
-#define LOG_LEVEL 1
-#define LOG_APPEND 0
+#define LOG_LEVEL 0
+#define LOG_APPEND 0  // 0 - file; 1 - stdout; 2 - stderr
 
 #define PLOG(level, ...) \
     {						\
@@ -76,7 +78,13 @@
 extern FILE *logp;
 extern char sstime[256];
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 void loggerInit(FILE **fp);
 void loggerTime(char*);
-
+#ifdef __cplusplus
+}
+#endif
 #endif /*_LOGGER_H*/

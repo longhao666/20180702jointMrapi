@@ -60,9 +60,8 @@ void Bottom::slotFreeUpMemory()
         iter != vectID.end();
         ++iter) {
         m_joint_copy = jointSelect(*iter);
-//        qDebug() << "*iter =" << *iter << ":" << m_joint_copy;
-        int re = jointDown(m_joint_copy);
-//        qDebug() << "m_joint_copy =" << m_joint_copy << "; re =" << re << "; on_btnQuit_clicked";
+        qDebug() << "m_joint_copy = " << m_joint_copy;
+        jointDown(&m_joint_copy);
     }
 }
 
@@ -82,7 +81,6 @@ void Bottom::updateEnableDriver()
 void Bottom::updateWorkModePushButton()
 {
     uint16_t workMode = 0;
-//    QString workModePushButtonStr = "background-color:green";
     uiBottom->workModePushButton->setStyleSheet("background-color:green");
     jointGetMode(m_joint, &workMode, 50, NULL);
     switch (workMode) {
@@ -105,14 +103,12 @@ void Bottom::updateWorkModePushButton()
 
 void Bottom::updateConnected()
 {
-//    QString connectedPushButtonStr = "background-color:green";
     uiBottom->connectedPushButton->setStyleSheet("background-color:green");
 }
 
 void Bottom::updateIfError()
 {
     uint16_t data16 = 0;
-//    QString ifErrorPushButtonStr = "background-color:green";
     jointGet(SYS_ERROR, 2, (Joint *)m_joint, (void *)&data16, 50, NULL);
     if(data16 != 0) {
         uiBottom->ifErrorPushButton->setStyleSheet("");
@@ -127,7 +123,7 @@ void Bottom::updatecmbID()
     vectID.clear();
     JOINT_HANDLE tempj = NULL;
     uint16_t ID = 0;
-    for(int i=1;i<25;i++) {
+    for(int i=1;i<2;i++) {
         tempj = jointUp(i, 0);
         if(tempj) {
             int re = jointGet(SYS_ID, 2, (Joint *)tempj, (void *)&ID, 100, NULL);
@@ -243,20 +239,12 @@ void Bottom::on_cmbID_currentIndexChanged(int index)
         connect(timerBottom, SIGNAL(timeout()), this, SLOT(slotTimerBottomDone()));
         timerBottom->start(BOTTOM_UPDATE_INTEVAL);
     }
-//    qDebug() << "timerBottom->isActive() =" << timerBottom->isActive();
     if(!timerBottom->isActive()) {
         timerBottom->start();
     }
     slotTimerBottomDone();
     uint16_t data16 = 0;
     jointGet(SYS_MODEL_TYPE, 2, (Joint *)m_joint, (void *)&data16, 50, NULL);
-    //#define MODEL_TYPE_M14        0x010
-    //#define MODEL_TYPE_M17        0x020
-    //#define MODEL_TYPE_M17V2      0x021
-    //#define MODEL_TYPE_M20        0x030
-    //#define MODEL_TYPE_M20V2      0x031
-    //#define MODEL_TYPE_M20E       0x031
-    //#define MODEL_TYPE_LIFT       0x040
     QString str;
     switch(data16) {
     case MODEL_TYPE_M14:
@@ -273,9 +261,6 @@ void Bottom::on_cmbID_currentIndexChanged(int index)
         break;
     case MODEL_TYPE_M20V2:
         str = "M20E";
-        break;
-    case MODEL_TYPE_LIFT:
-        str = "LIFT";
         break;
     default :
         break;
@@ -300,17 +285,6 @@ void Bottom::slotTimerBottomDone()
 
 void Bottom::on_btnQuit_clicked()
 {
-//    QMessageBox::information(this, tr("information"), tr("该功能还没实现！"), QMessageBox::Ok);
-//    return ;
-#if 0 // 必须先给空才能清空内存,因为有定时器一直在用joint
-    int re = jointDown(m_joint);
-    qDebug() << "re = " << re << "on_btnQuit_clicked";
-    if(re == 0) {
-        emit cmbIDJoint();
-    }else {
-        qDebug() << " failed! ";
-    }
-#endif
     if(!m_joint) {
         return ;
     }
@@ -323,9 +297,8 @@ void Bottom::on_btnQuit_clicked()
             iter != vectID.end();
             ++iter) {
             m_joint_copy = jointSelect(*iter);
-//            qDebug() << "*iter =" << *iter << ":" << m_joint_copy;
-            int re = jointDown(m_joint_copy);
-//            qDebug() << "m_joint_copy =" << m_joint_copy << "; re =" << re << "; on_btnQuit_clicked";
+            qDebug() << "m_joint_copy =" << m_joint_copy;
+            jointDown(&m_joint_copy);
         }
         emit signalRecoverBotton();
         uiBottom->enableDriverPushButton_2->setStyleSheet("");
