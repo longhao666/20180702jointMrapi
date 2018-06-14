@@ -1,4 +1,4 @@
-﻿#include "showqueue.h"
+#include "showqueue.h"
 #include <iostream>
 
 using namespace std;
@@ -6,6 +6,10 @@ using namespace std;
 ShowQueue::ShowQueue(int queueSize)
 {
     MaxLength = queueSize;
+    numberMin1 = 0;
+    numberMax1 = 0;
+    numberMin2 = 0;
+    numberMax2 = 0;
 }
 
 int ShowQueue::Count()
@@ -23,6 +27,15 @@ bool ShowQueue::DelHead()
     if (IsEmpty()) {
         return false;
     } else {
+        int num = data[0];
+        if(num == numberMax1) {
+            numberMax1 = numberMax2;
+            numberMax2--;
+        }
+        if(num == numberMin1) {
+            numberMin1 = numberMin2;
+            numberMin2++;
+        }
         data.pop_front();
         return true;
     }
@@ -43,6 +56,22 @@ void ShowQueue::Append(double newdata)
     while (Count() >= MaxLength) { // 当MaxLength改变之后
         // delete head then append
         DelHead();
+    }
+    if(newdata > numberMax2) {
+        numberMax2 = newdata;
+        if(numberMax2 > numberMax1) {
+            double temp = numberMax1;
+            numberMax1 = numberMax2;
+            numberMax2 = temp;
+        }
+    }
+    if(newdata < numberMin2) {
+        numberMin1 = newdata;
+        if(numberMin2 < numberMin1) {
+            double temp = numberMin1;
+            numberMin1 = numberMin2;
+            numberMin2 = temp;
+        }
     }
     // 把新元素挂到链尾
     data.push_back(newdata);

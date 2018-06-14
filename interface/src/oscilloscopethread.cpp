@@ -202,15 +202,24 @@ void OscilloScopeThread::showData()
             for (int j = 0; j < paintArea->showItems[i].sq.Count(); j++) {//分别处理每一坐标对
                 double verticalValue1 = paintArea->showItems[i].sq.GetValue(j);
                 points.append(QPointF(j, verticalValue1));
+//                qDebug() << points.at(j).x() << " " << points.at(j).y();
             }
         }
         switch (i) {
-            case 0:JT->curveTgCUR->setSamples( points );break;
-            case 1:JT->curveTgSPD->setSamples( points );break;
+//            case 0:JT->curveTgCUR->setSamples( points );break;
+            case 1:
+                JT->curveTgSPD->setSamples( points );
+                break;
             case 2:JT->curveTgPOS->setSamples( points );break;
-            case 3:JT->curveRlCUR->setSamples( points );break;
+//            case 3:JT->curveRlCUR->setSamples( points );break;
+            case 3:
+                JT->curveRlCUR->axisY()->setRange(paintArea->showItems[i].sq.numberMin1,// + paintArea->showItems[i].sq.numberMin1/10,
+                                                  paintArea->showItems[i].sq.numberMax1);// + paintArea->showItems[i].sq.numberMax1/10);
+                JT->curveRlSplineSeries->replace(points);
+                break;
             case 4:JT->curveRlSPD->setSamples( points );break;
             case 5:JT->curveRlPOS->setSamples( points );break;
         }
+//        qDebug() << paintArea->showItems[i].sq.numberMin1 << paintArea->showItems[i].sq.numberMax1;
     }
 }

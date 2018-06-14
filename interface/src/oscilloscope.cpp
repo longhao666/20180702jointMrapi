@@ -13,6 +13,8 @@ OscilloScope::OscilloScope(QWidget* parent) :
     qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
 #endif
     uiOscilloScope->setupUi(this);
+
+    uiOscilloScope->plot->setRubberBand(QChartView::RectangleRubberBand);
 }
 
 OscilloScope::~OscilloScope()
@@ -57,23 +59,28 @@ void OscilloScope::OscilloScopeInitialize(int ID)
     }
 
     // 初始化qwt plot
+#if 0 // qwt
     uiOscilloScope->plot->enableAxis(QwtPlot::xBottom , false);
 //    uiOscilloScope->plot->enableAxis(QwtPlot::yLeft , false);
 //    uiOscilloScope->plot->enableAxis(QwtPlot::yRight , true);
     uiOscilloScope->plot->setCanvasBackground(Qt::gray);
 //    uiOscilloScope->plot->setAxisScale(QwtPlot::yLeft, 0, 2000, 100);
     uiOscilloScope->plot->setTitle("Current Curve");
+#endif
+
     uiOscilloScope->plotSPD->enableAxis(QwtPlot::xBottom , false);
 //    uiOscilloScope->plotSPD->enableAxis(QwtPlot::yLeft , false);
 //    uiOscilloScope->plotSPD->enableAxis(QwtPlot::yRight , true);
     uiOscilloScope->plotSPD->setCanvasBackground(Qt::gray);
     uiOscilloScope->plotSPD->setTitle("Speed Curve");
+
     uiOscilloScope->plotPOS->enableAxis(QwtPlot::xBottom , false);
 //    uiOscilloScope->plotPOS->enableAxis(QwtPlot::yLeft , false);
 //    uiOscilloScope->plotPOS->enableAxis(QwtPlot::yRight , true);
     uiOscilloScope->plotPOS->setCanvasBackground(Qt::gray);
     uiOscilloScope->plotPOS->setTitle("Position Curve");
 
+#if 0 // qwt
     if (grid == NULL) {
         grid = new QwtPlotGrid ();
         grid->setPen(Qt::black, 0, Qt::DotLine);
@@ -85,6 +92,7 @@ void OscilloScope::OscilloScopeInitialize(int ID)
         grid->setPen(Qt::black, 0, Qt::DotLine);
         grid->attach(uiOscilloScope->plotPOS);
     }
+#endif
 #if 0 // 你既然说没有就给屏了吧
     if (plotMag == NULL) { // 暂时没用
         plotMag = new QwtPlotMagnifier(uiOscilloScope->plot->canvas());
@@ -98,12 +106,16 @@ void OscilloScope::OscilloScopeInitialize(int ID)
         plotPOSMag->setAxisEnabled(QwtPlot::yLeft , false);
     }
 #endif
-    if (curveRlCUR == NULL) {
-        curveRlCUR = new QwtPlotCurve();
-        curveRlCUR->setPen(QColor(RLCUR_RGB_R,RLCUR_RGB_G,RLCUR_RGB_B), 3 );
-        curveRlCUR->setRenderHint( QwtPlotItem::RenderAntialiased, true );
-        curveRlCUR->attach(uiOscilloScope->plot);
-    }
+
+#if 0 // qwt
+//    if (curveRlCUR == NULL) {
+//        curveRlCUR = new QwtPlotCurve();
+//        curveRlCUR->setPen(QColor(RLCUR_RGB_R,RLCUR_RGB_G,RLCUR_RGB_B), 3 );
+//        curveRlCUR->setRenderHint( QwtPlotItem::RenderAntialiased, true );
+//        curveRlCUR->attach(uiOscilloScope->plot);
+//    }
+#endif
+
     if (curveRlPOS == NULL) {
         curveRlPOS = new QwtPlotCurve();
         curveRlPOS->setPen(QColor(RLPOS_RGB_R,RLPOS_RGB_G,RLPOS_RGB_B), 3 );
@@ -116,12 +128,14 @@ void OscilloScope::OscilloScopeInitialize(int ID)
         curveRlSPD->setRenderHint( QwtPlotItem::RenderAntialiased, true );
         curveRlSPD->attach(uiOscilloScope->plotSPD);
     }
+#if 0  // qwt
     if (curveTgCUR == NULL) {
         curveTgCUR = new QwtPlotCurve();
         curveTgCUR->setPen(QColor(TGCUR_RGB_R,TGCUR_RGB_G,TGCUR_RGB_B), 3 );
         curveTgCUR->setRenderHint( QwtPlotItem::RenderAntialiased, true );
         curveTgCUR->attach(uiOscilloScope->plot);
     }
+#endif
     if (curveTgPOS == NULL) {
         curveTgPOS = new QwtPlotCurve();
         curveTgPOS->setPen(QColor(TGPOS_RGB_R,TGPOS_RGB_G,TGPOS_RGB_B), 3 );
@@ -134,6 +148,23 @@ void OscilloScope::OscilloScopeInitialize(int ID)
         curveTgSPD->setRenderHint( QwtPlotItem::RenderAntialiased, true );
         curveTgSPD->attach(uiOscilloScope->plotSPD);
     }
+
+#if 1 // chart
+    if(curveRlCUR == NULL) {
+        curveRlCUR = new QChart();
+        uiOscilloScope->plot->setChart(curveRlCUR);
+        curveRlSplineSeries = new QSplineSeries();
+        for(int i=0; i<700; i++) {
+            curveRlSplineSeries->append(i, i);
+        }
+        curveRlCUR->addSeries(curveRlSplineSeries);
+        curveRlCUR->legend()->hide();
+        curveRlCUR->createDefaultAxes();
+        curveRlCUR->axisY()->setRange(-0.13, -0.1);
+        curveRlCUR->axisX()->setLabelsVisible(false);
+
+    }
+#endif
 
     if (m_joint == NULL) {
         return;
@@ -240,7 +271,7 @@ void OscilloScope::OscilloScopeInitialize(int ID)
 
 // 更新示波器显示
 void OscilloScope::updatePlot() {
-    uiOscilloScope->plot->replot();
+//    uiOscilloScope->plot->replot();
     uiOscilloScope->plotSPD->replot();
     uiOscilloScope->plotPOS->replot();
 }
@@ -337,137 +368,17 @@ void OscilloScope::on_scopeEnablePushButton_clicked()
     }
 }
 
-#if 0
-void OscilloScope::on_offset_POSLineEdit_editingFinished()
-{
-    if (osthread == NULL) {
-        return;
-    }
-    osthread->paintArea->positionOffset = uiOscilloScope->offset_POSLineEdit->text().toDouble();
-}
-
-void OscilloScope::on_offset_SPDLineEdit_editingFinished()
-{
-    if (osthread == NULL) {
-        return;
-    }
-    osthread->paintArea->speedOffset = uiOscilloScope->offset_SPDLineEdit->text().toDouble();
-}
-
-void OscilloScope::on_offset_CURLineEdit_editingFinished()
-{
-    if (osthread == NULL) {
-        return;
-    }
-    osthread->paintArea->currentOffset =  ->offset_CURLineEdit->text().toDouble();
-}
-
-void OscilloScope::on_prComboBox_currentIndexChanged(int index)
-{
-    if (osthread == NULL) {
-        return;
-    }
-    switch(index) {
-    case 0:
-        osthread->paintArea->pr = 10;
-        break;
-    case 1:
-        osthread->paintArea->pr = 50;
-        break;
-    case 2:
-        osthread->paintArea->pr = 100;
-        break;
-    case 3:
-        osthread->paintArea->pr = 1000;
-        break;
-    default:
-        osthread->paintArea->pr = 10;
-        break;
-    }
-}
-
-void OscilloScope::on_srComboBox_currentIndexChanged(int index)
-{
-    if (osthread == NULL) {
-        return;
-    }
-    switch(index) {
-    case 0:
-        osthread->paintArea->sr = 0.5;
-        break;
-    case 1:
-        osthread->paintArea->sr = 1.0;
-        break;
-    case 2:
-        osthread->paintArea->sr = 2.0;
-        break;
-    default:
-        osthread->paintArea->sr = 2.0;
-        break;
-    }
-}
-
-void OscilloScope::on_crComboBox_currentIndexChanged(int index)
-{
-    if (osthread == NULL) {
-        return;
-    }
-    switch(index) {
-    case 0:
-        osthread->paintArea->cr = 20;
-        break;
-    case 1:
-        osthread->paintArea->cr = 60;
-        break;
-    case 2:
-        osthread->paintArea->cr = 100;
-        break;
-    case 3:
-        osthread->paintArea->cr = 200;
-        break;
-    default:
-        osthread->paintArea->cr = 100;
-        break;
-    }
-}
-
-void OscilloScope::on_ScanFrequencyComboBox_currentIndexChanged(int index)
-{
-    if (osthread == NULL) {
-        return;
-    }
-    const int MaxFrequency = 10; // kHz
-    osthread->paintArea->Interval = osthread->paintArea->ScanFrequency / MaxFrequency / OSCILLO_SCOPE_INTEVAL; // think about frequency division factor of 10 kHz(ScanFrequency / 10 = Interval * OSCILLO_SCOPE_INTEVAL)
-    switch(index) {
-    case 0: {// 10(ms) = osthread->paintArea->Interval * OSCILLO_SCOPE_INTEVAL
-        osthread->paintArea->Interval = 10 / OSCILLO_SCOPE_INTEVAL;
-        osthread->paintArea->ScanFrequency = 10 * MaxFrequency;
-        break;
-    }
-    case 1: // 50ms
-        osthread->paintArea->Interval = 50 / OSCILLO_SCOPE_INTEVAL;
-        osthread->paintArea->ScanFrequency = 50 * MaxFrequency;
-        break;
-    case 2: // 100ms
-        osthread->paintArea->Interval = 100 / OSCILLO_SCOPE_INTEVAL;
-        osthread->paintArea->ScanFrequency = 100 * MaxFrequency;
-        break;
-    }
-    uint16_t data16 = osthread->paintArea->ScanFrequency;
-    jointSet(SCP_REC_TIM, 2, (Joint *)joint, (void *)&data16, 50,NULL);
-}
-#endif
 
 void OscilloScope::on_yLeft_clicked()
 {
 //    qDebug() << uiOscilloScope->yLeft->isCheckable();
 //    qDebug() << uiOscilloScope->yLeft->isChecked();
     if(uiOscilloScope->yLeft->isChecked()) {
-        uiOscilloScope->plot->enableAxis(QwtPlot::yLeft, true);
+//        uiOscilloScope->plot->enableAxis(QwtPlot::yLeft, true);
         uiOscilloScope->plotSPD->enableAxis(QwtPlot::yLeft, true);
         uiOscilloScope->plotPOS->enableAxis(QwtPlot::yLeft, true);
     }else {
-        uiOscilloScope->plot->enableAxis(QwtPlot::yLeft, false);
+//        uiOscilloScope->plot->enableAxis(QwtPlot::yLeft, false);
         uiOscilloScope->plotSPD->enableAxis(QwtPlot::yLeft, false);
         uiOscilloScope->plotPOS->enableAxis(QwtPlot::yLeft, false);
     }

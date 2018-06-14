@@ -540,19 +540,6 @@
     </property>
    </item>
   </widget>
-  <widget class="QwtPlot" name="plot">
-   <property name="geometry">
-    <rect>
-     <x>5</x>
-     <y>5</y>
-     <width>685</width>
-     <height>195</height>
-    </rect>
-   </property>
-   <property name="mouseTracking">
-    <bool>true</bool>
-   </property>
-  </widget>
   <widget class="QPushButton" name="yLeft">
    <property name="geometry">
     <rect>
@@ -572,6 +559,16 @@
     <bool>true</bool>
    </property>
   </widget>
+  <widget class="QChartView" name="plot" native="true">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>681</width>
+     <height>181</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -579,6 +576,12 @@
    <class>QwtPlot</class>
    <extends>QFrame</extends>
    <header>qwt_plot.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QChartView</class>
+   <extends>QWidget</extends>
+   <header>qchartview.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

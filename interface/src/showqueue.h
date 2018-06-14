@@ -1,4 +1,4 @@
-﻿/*
+/*
  * 自定义循环队列
  * 测试代码如下
 
@@ -45,6 +45,10 @@ class ShowQueue
 {
 public:
     int MaxLength;
+    double numberMax1;
+    double numberMin1;
+    double numberMax2;
+    double numberMin2;
 
     explicit ShowQueue(int queueSize);
     int Count();

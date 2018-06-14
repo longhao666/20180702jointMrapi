@@ -13,6 +13,14 @@
 #include "qwt_plot_magnifier.h"
 #include "qwt_plot_panner.h"
 
+#include <QChartView>
+#include <QChart>
+#include <QSplineSeries>
+#include <QLineSeries>
+#include <QValueAxis>
+
+using namespace QtCharts;
+
 namespace Ui {
 class OscilloScope;
 }
@@ -28,10 +36,13 @@ public:
   ~OscilloScope();
   QwtPlotCurve *curveTgPOS = NULL;
   QwtPlotCurve *curveTgSPD = NULL;
-  QwtPlotCurve *curveTgCUR = NULL;
+//  QwtPlotCurve *curveTgCUR = NULL;
   QwtPlotCurve *curveRlPOS = NULL;
   QwtPlotCurve *curveRlSPD = NULL;
-  QwtPlotCurve *curveRlCUR = NULL;
+//  QwtPlotCurve *curveRlCUR = NULL;
+   QChart *curveTgCUR = NULL;
+   QChart *curveRlCUR = NULL;
+   QSplineSeries *curveRlSplineSeries = NULL;
 
 
 public slots:
