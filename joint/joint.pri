@@ -32,6 +32,7 @@ INCLUDEPATH += $$PWD/winLib/Include
 LIBS += -L$$PWD/winLib -lPCANBasic
 }
 
+# 使用Linux必须要保证 ls /dev里面有can设备，不然程序直接退出，不能初始化can
 unix {
 DEFINES += Linux
 SOURCES += \
