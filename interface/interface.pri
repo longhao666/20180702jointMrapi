@@ -30,7 +30,14 @@ FORMS += \
 
 INCLUDEPATH += $$PWD/src/
 
-INCLUDEPATH += $$PWD/qwt/include
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/qwt/lib/ -lqwt
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/qwt/lib/ -lqwtd
+win32 {
+INCLUDEPATH += $$PWD/qwt/winInclude
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/qwt/winLib/ -lqwt
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/qwt/winLib/ -lqwtd
 DEPENDPATH += $$PWD/qwt/lib
+}
+
+unix {
+INCLUDEPATH += $$PWD/qwt/LinuxQwtSrc
+LIBS += -L$$PWD/qwt/LinuxLib -lqwt
+}

@@ -1,18 +1,5 @@
 
 
-win32 {
-DEFINES += _WINDOWS
-SOURCES += \
-    $$PWD/src/thread_win.c
-LIBS += -L$$PWD/winlib -lPCANBasic
-}
-
-unix {
-DEFINES += Linux
-SOURCES += \
-    $$PWD/src/thread_linux.c
-}
-
 DEFINES += PCAN_BASIC
 
 SOURCES += \
@@ -33,10 +20,24 @@ HEADERS += \
     $$PWD/src/module.h \
     $$PWD/src/gripper.h \
     $$PWD/src/pcan_basic.h \
-    $$PWD/src/PCANBasic.h \
 
 INCLUDEPATH += $$PWD/src
 
 
+win32 {
+DEFINES += _WINDOWS
+SOURCES += \
+    $$PWD/src/thread_win.c
+INCLUDEPATH += $$PWD/winLib/Include
+LIBS += -L$$PWD/winLib -lPCANBasic
+}
+
+unix {
+DEFINES += Linux
+SOURCES += \
+    $$PWD/src/thread_linux.c
+INCLUDEPATH += $$PWD/LinuxLib/Include
+LIBS += -L$$PWD/LinuxLib -lpcanbasic
+}
 
 
