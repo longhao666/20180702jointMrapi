@@ -40,6 +40,11 @@ HEADERS += \
 
 FORMS += \
         widget.ui
+win32 {
 
 include(./joint/joint.pri)
+
 include(./interface/interface.pri)
+}
+
+
