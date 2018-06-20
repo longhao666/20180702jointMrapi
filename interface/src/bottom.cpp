@@ -23,9 +23,6 @@ Bottom::Bottom(QWidget *parent) :
     QWidget(parent),
     uiBottom(new Ui::Bottom)
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     uiBottom->setupUi(this);
     timerBottom = NULL;
     isCANInitialSucceed = false;
@@ -39,17 +36,11 @@ Bottom::Bottom(QWidget *parent) :
 
 Bottom::~Bottom()
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     delete uiBottom;
 }
 
 void Bottom::waitingForWidgetReady()
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     this->on_btnUpdateID_clicked();
 }
 
@@ -152,16 +143,19 @@ void Bottom::updatecmbID()
 
 void Bottom::on_btnUpdateID_clicked()
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     if(!isCANInitialSucceed) {
         isCANInitialSucceed = true;
         char str[] = "pcanusb1";
         qDebug("===============");
         int re = startMaster(str, 0);
         qDebug() << re << "startMaster(0)";
-        this->updatecmbID();
+        if(re == 64) {
+            isCANInitialSucceed = false;
+            QMessageBox::warning(this, "WARNING", "no CAN\n退出程序\t\t");
+            exit(-1);
+        }else {
+            this->updatecmbID();
+        }
     }
     else {
         QMessageBox::warning(this,tr("提示"),
@@ -172,9 +166,6 @@ void Bottom::on_btnUpdateID_clicked()
 
 void Bottom::on_enableDriverPushButton_clicked()
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     if(!m_joint) {
         return ;
     }
@@ -189,9 +180,6 @@ void Bottom::on_enableDriverPushButton_clicked()
 
 void Bottom::on_btnFlash_clicked()
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     if(!m_joint) {
         return ;
     }
@@ -201,17 +189,11 @@ void Bottom::on_btnFlash_clicked()
 
 void Bottom::on_btnLoad_clicked()
 {
-#if 0
-    QMessageBox::information(this, tr("information"), tr("该功能还没实现！"), QMessageBox::Ok);
-#endif
     emit signalBtnLoadClicked();
 }
 
 void Bottom::on_btnSave_clicked()
 {
-#if 0
-    QMessageBox::information(this, tr("information"), tr("该功能还没实现！"), QMessageBox::Ok);
-#endif
     if(!m_joint) {
         return ;
     }
@@ -220,9 +202,6 @@ void Bottom::on_btnSave_clicked()
 
 void Bottom::on_cmbID_currentIndexChanged(int index)
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     if(!m_joint) {
         return ;
     }
