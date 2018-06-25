@@ -1,7 +1,6 @@
 #include "oscilloscope.h"
 #include "ui_oscilloscope.h"
 
-#define LHDEBUG 0
 
 #define OSCILLO_SCOPE_INTEVAL 10    // 示波器采样周期（ms）
 
@@ -9,9 +8,6 @@ OscilloScope::OscilloScope(QWidget* parent) :
     QWidget(parent),
     uiOscilloScope(new Ui::OscilloScope)
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     uiOscilloScope->setupUi(this);
 }
 
@@ -22,9 +18,6 @@ OscilloScope::~OscilloScope()
 
 void OscilloScope::OscilloScopeInitialize(int ID)
 {
-#if 0
-    qDebug() << "ID = " << ID << "OscilloScopeInitialize";
-#endif
     // initialize Oscilloscope - related content
     tgPOSPushButtonOn = "background-color: rgb(";
     tgPOSPushButtonOn += QString::number(TGPOS_RGB_R) + ',' + QString::number(TGPOS_RGB_G) + ',' + QString::number(TGPOS_RGB_B) + ");";
@@ -193,7 +186,9 @@ void OscilloScope::OscilloScopeInitialize(int ID)
     }
     //由记录对象标志初始化要显示的测量曲线
     if (osthread->paintArea->showItems.empty()) {
+#ifdef LHDEBUG
         qDebug("osthread->paintArea->showItems is empty");
+#endif
     } else if (osthread->paintArea->showItems.size() == 6){
         if ((osthread->paintArea->Mask & MASK_TAGCUR) != 0x00) {
             osthread->paintArea->showItems[0].IsCheck = true;

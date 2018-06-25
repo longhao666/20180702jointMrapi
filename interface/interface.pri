@@ -1,4 +1,11 @@
 
+
+HEADERS += $$PWD/src/interfaglobal.h
+HEADERS += $$PWD/src/widget.h
+SOURCES += $$PWD/src/main.cpp
+SOURCES += $$PWD/src/widget.cpp
+FORMS += $$PWD/src/widget.ui
+
 SOURCES += \
     $$PWD/src/bottom.cpp \
     $$PWD/src/move.cpp \
@@ -31,13 +38,26 @@ FORMS += \
 INCLUDEPATH += $$PWD/src/
 
 win32 {
-INCLUDEPATH += $$PWD/qwt/winInclude
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/qwt/winLib/ -lqwt
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/qwt/winLib/ -lqwtd
-DEPENDPATH += $$PWD/qwt/lib
+
+#    INCLUDEPATH += $$PWD/qwt/winInclude
+#    win32:CONFIG(release, debug|release): LIBS += -L$$PWD/qwt/winLib/ -lqwt
+#    else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/qwt/winLib/ -lqwtd
+
+    INCLUDEPATH += $$PWD/qwt/winInclude
+    win32 {
+        CONFIG(release, debug|release) {
+            LIBS += -L$$PWD/qwt/winLib/ -lqwt
+        }else {
+            win32 {
+                CONFIG(debug, debug|release) {
+                    LIBS += -L$$PWD/qwt/winLib/ -lqwtd
+                }
+            }
+        }
+    }
 }
 
 unix {
-INCLUDEPATH += $$PWD/qwt/LinuxQwtSrc
-LIBS += -L$$PWD/qwt/LinuxLib -lqwt
+    INCLUDEPATH += $$PWD/qwt/LinuxQwtSrc
+    LIBS += -L$$PWD/qwt/LinuxLib -lqwt
 }

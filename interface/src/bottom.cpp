@@ -9,7 +9,6 @@
 using std::vector;
 using std::sort;
 
-#define LHDEBUG 0
 #define BOTTOM_UPDATE_INTEVAL 3000
 
 uint16_t sys_redu_ratio = 1000;
@@ -25,7 +24,8 @@ Bottom::Bottom(QWidget *parent) :
 {
     uiBottom->setupUi(this);
     timerBottom = NULL;
-    isCANInitialSucceed = false;
+    flagCan = noCan;
+    flagModule = noModule;
 #if 0
     uiBottom->enableDriverPushButton_2->setEnabled(false);
     uiBottom->ifErrorPushButton->setEnabled(false);
@@ -119,14 +119,23 @@ void Bottom::updatecmbID()
         if(tempj) {
             int re = jointGet(SYS_ID, 2, (Joint *)tempj, (void *)&ID, 100, NULL);
             vectID.push_back(ID);
+#ifdef LHDEBUG
             qDebug() << "发现这个ID:" << ID << re;
+#endif
         }
     }
     if(vectID.empty()) {
 //        qDebug() << vectID.empty();
-        this->isCANInitialSucceed = false;
+        flagCan = noCan;
+        flagModule = noModule;
+        int re = stopMaster(0);
+#ifdef LHDEBUG
+        qDebug() << "re" << re << "stopMaster(0)" << "no module";
+#endif
         QMessageBox::warning(this,"WARNING","Module not detected", QMessageBox::Ok);
         return ;
+    }else {
+        flagModule = yesModule;
     }
     sort(vectID.begin(), vectID.end());
 #if 0
@@ -143,19 +152,31 @@ void Bottom::updatecmbID()
 
 void Bottom::on_btnUpdateID_clicked()
 {
-    if(!isCANInitialSucceed) {
-        isCANInitialSucceed = true;
+    if(flagCan == noCan) {
+        flagCan = yesCan;
         char str[] = "pcanusb1";
-        qDebug("===============");
+#ifdef LHDEBUG
+        qDebug("开始===============");
+#endif
         int re = startMaster(str, 0);
+#ifdef LHDEBUG
         qDebug() << re << "startMaster(0)";
+#endif
+#if 0
         if(re == 64) {
-            isCANInitialSucceed = false;
-            QMessageBox::warning(this, "WARNING", "no CAN\n退出程序\t\t");
-            exit(-1);
+            flagCan = noCan;
+            re = stopMaster(0);
+#ifdef LHDEBUG
+            qDebug() << "re" << re << "stopMaster(0)" << "no can";
+#endif
+            QMessageBox::warning(this, "WARNING", "no CAN\t\t");
         }else {
+//            flagCan = yesCan;
             this->updatecmbID();
         }
+#elif 1
+        this->updatecmbID();
+#endif
     }
     else {
         QMessageBox::warning(this,tr("提示"),
@@ -173,7 +194,9 @@ void Bottom::on_enableDriverPushButton_clicked()
     jointGet(SYS_ENABLE_DRIVER, 2, (Joint *)m_joint, (void *)&data16, 50, NULL);
     bool isEbable = !data16;
     uint16_t value = (int)isEbable;
+#ifdef LHDEBUG
     qDebug() << data16 << isEbable;
+#endif
     jointSet(SYS_ENABLE_DRIVER, 2, (Joint *)m_joint, (void *)&value, 50, NULL);
     updateEnableDriver();
 }
@@ -207,7 +230,7 @@ void Bottom::on_cmbID_currentIndexChanged(int index)
     }
     sys_id = uiBottom->cmbID->currentText().toInt();
     m_joint = jointSelect(sys_id);
-#if 1
+#if 0
     qDebug() << "sys_id  = " << sys_id << "; index = " << index << "; on_cmbID_currentIndexChanged";
     qDebug() << "m_joint = " << m_joint;
 #endif
@@ -269,14 +292,19 @@ void Bottom::on_btnQuit_clicked()
     }
     int re = QMessageBox::information(this, tr(" 提示 "), tr(" 确定要退出吗? "), QMessageBox::Yes, QMessageBox::No);
     if(re == QMessageBox::Yes) {
+#ifdef LHDEBUG
         qDebug() << "re " << re << "yes";
-        isCANInitialSucceed = false;
+#endif
+        flagCan = noCan;
+        flagModule = noModule;
         m_joint = NULL;
         for(vector<uint32_t>::iterator iter=vectID.begin();
             iter != vectID.end();
             ++iter) {
             m_joint_copy = jointSelect(*iter);
+#ifdef LHDEBUG
             qDebug() << "m_joint_copy =" << m_joint_copy;
+#endif
             jointDown(&m_joint_copy);
         }
         emit signalRecoverBotton();
@@ -286,8 +314,12 @@ void Bottom::on_btnQuit_clicked()
         uiBottom->ifErrorPushButton->setStyleSheet("");
         timerBottom->stop();
     }else if(re == QMessageBox::No){
+#ifdef LHDEBUG
         qDebug() << "re " << re << "no";
+#endif
     }else {
+#ifdef LHDEBUG
         qDebug() << "nothingNess";
+#endif
     }
 }

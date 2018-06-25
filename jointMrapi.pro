@@ -17,9 +17,10 @@ DESTDIR = ./Bin
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
+
 DEFINES += LHRELEASE
 DEFINES += LHTEST
-DEFINES += LHDEBUG
+#DEFINES += LHDEBUG
 
 
 # You can also make your code fail to compile if you use deprecated APIs.
@@ -28,16 +29,6 @@ DEFINES += LHDEBUG
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 
-SOURCES += \
-        main.cpp \
-        widget.cpp \
-
-HEADERS += \
-        widget.h \
-    interfaglobal.h \
-
-FORMS += \
-        widget.ui
-
-include(./joint/joint.pri)
+#include(./joint/joint.pri)
+include(./mr-api/mr-api.pri)
 include(./interface/interface.pri)

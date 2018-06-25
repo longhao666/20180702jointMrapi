@@ -18,6 +18,7 @@ public:
 //    JOINT_HANDLE joint;
 
 public:
+
     Bottom(QWidget *parent = 0);
     ~Bottom();
 
@@ -49,10 +50,22 @@ private slots:
     void on_btnQuit_clicked();
 
 private:
+    enum FlagModule{
+        yesModule,
+        noModule
+    };
+
+    enum FlagCan {
+        yesCan,
+        noCan
+    };
+
     Ui::Bottom *uiBottom;
 
-    bool isCANInitialSucceed;
     QTimer *timerBottom;
+    FlagModule flagModule;
+    FlagCan flagCan;
+
 };
 
 #endif // BOTTOM_H

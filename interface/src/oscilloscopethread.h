@@ -9,15 +9,6 @@
  * 一个定时器用于更新界面要显示的曲线，但控件的更新不能在这个线程做
  */
 
-#include <QMainWindow>
-#include <QDialog>
-#include <QComboBox>
-#include <QGridLayout>
-#include <QLabel>
-#include <QTimer>
-#include <QKeyEvent>
-#include <QMouseEvent>
-#include <iostream>
 #include "qwt_plot.h"
 #include "qwt_plot_curve.h"
 #include "qwt_plot_grid.h"
@@ -27,6 +18,16 @@
 #include "paintarea.h"
 #include "showqueue.h"
 #include "interfaglobal.h"
+
+#include <QMainWindow>
+#include <QDialog>
+#include <QComboBox>
+#include <QGridLayout>
+#include <QLabel>
+#include <QTimer>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <iostream>
 
 #define GET_VALUE_INTEVAL   10  // 示波器采样周期（ms）
 #define UPDATE_SHOW_INTEVAL 10  // 示波器刷新显示周期（ms）

@@ -3,16 +3,12 @@
 #include <QMessageBox>
 #include <QDebug>
 
-#define LHDEBUG 0
 #define MONITOR_INTEVAL 500         // 监视器更新周期（ms）
 
 SetAndHealth::SetAndHealth(QWidget *parent) :
     QWidget(parent),
     uiSetAndHealth(new Ui::SetAndHealth)
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     uiSetAndHealth->setupUi(this);
     timer = NULL;
 #ifdef LHRELEASE
@@ -23,19 +19,11 @@ SetAndHealth::SetAndHealth(QWidget *parent) :
 
 SetAndHealth::~SetAndHealth()
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     delete uiSetAndHealth;
 }
 
 void SetAndHealth::SetAndHealthIint(int ID)
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-    qDebug() << "ID = " << ID;
-    qDebug() << "m_joint =" << m_joint;
-#endif
     if(!m_joint) {
         return ;
     }
@@ -80,9 +68,6 @@ void SetAndHealth::health()
 
 void SetAndHealth::myTimerSlot()
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     if(!m_joint) {
         return ;
     }
@@ -109,9 +94,6 @@ void SetAndHealth::myTimerSlot()
 
 void SetAndHealth::on_IDPushButton_clicked()
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     // 不断电重启的话既不能检测到旧ID,也不能用新ID
     if(!m_joint) {
         return ;
@@ -168,7 +150,9 @@ void SetAndHealth::on_ENonPPushButton_clicked()
 //    can1->controller.SendMsg(jointBeingUsed->ID, CMDTYPE_WR_NR, SYS_ENABLE_ON_POWER, data, 2);
 //    can1->controller.delayMs(1);
     jointSet(SYS_ENABLE_ON_POWER, 2, (Joint *)m_joint, (void *)&value, 50, NULL);
+#ifdef LHDEBUG
     qDebug("SetAndHealth::on_ENonPPushButton_clicked(): value = %d", value);
+#endif
     set();
 }
 
@@ -178,7 +162,9 @@ void SetAndHealth::on_clearErrorButton_clicked()
         return ;
     }
     jointSetClearError(m_joint, 100, NULL);
+#ifdef LHDEBUG
     qDebug() << tr("SetAndHealth::on_clearErrorButton_clicked(): done.");
+#endif
 }
 
 void SetAndHealth::on_updateButton_clicked()

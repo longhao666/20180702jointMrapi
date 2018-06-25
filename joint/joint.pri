@@ -1,5 +1,4 @@
 
-
 DEFINES += PCAN_BASIC
 
 SOURCES += \
@@ -9,7 +8,6 @@ SOURCES += \
     $$PWD/src/module.c \
     $$PWD/src/gripper.c \
     $$PWD/src/pcan_basic.c \
-
 
 HEADERS += \
     $$PWD/src/mrapi.h \
@@ -23,22 +21,19 @@ HEADERS += \
 
 INCLUDEPATH += $$PWD/src
 
-
 win32 {
-DEFINES += _WINDOWS
-SOURCES += \
-    $$PWD/src/thread_win.c
-INCLUDEPATH += $$PWD/winLib/Include
-LIBS += -L$$PWD/winLib -lPCANBasic
+    DEFINES += _WINDOWS
+    SOURCES += \
+        $$PWD/src/thread_win.c
+    INCLUDEPATH += $$PWD/winLib/Include
+    LIBS += -L$$PWD/winLib -lPCANBasic
 }
 
 # 使用Linux必须要保证 ls /dev里面有can设备，不然程序直接退出，不能初始化can
 unix {
-DEFINES += Linux
-SOURCES += \
-    $$PWD/src/thread_linux.c
-INCLUDEPATH += $$PWD/LinuxLib/Include
-LIBS += -L$$PWD/LinuxLib -lpcanbasic
+    DEFINES += Linux
+    SOURCES += \
+        $$PWD/src/thread_linux.c
+    INCLUDEPATH += $$PWD/LinuxLib/Include
+    LIBS += -L$$PWD/LinuxLib -lpcanbasic
 }
-
-
