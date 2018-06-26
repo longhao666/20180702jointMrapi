@@ -11,10 +11,6 @@ SetAndHealth::SetAndHealth(QWidget *parent) :
 {
     uiSetAndHealth->setupUi(this);
     timer = NULL;
-#ifdef LHRELEASE
-    uiSetAndHealth->errorTextEdit->setEnabled(false);
-#endif
-
 }
 
 SetAndHealth::~SetAndHealth()
@@ -72,15 +68,9 @@ void SetAndHealth::myTimerSlot()
         return ;
     }
     uint16_t udata16[15] = {0};
-//    jointGet(SYS_VOLTAGE, 2, (Joint *)m_joint, (void *)&udata16[0], 50, NULL);
     jointGet(SYS_CURRENT_L, 4, (Joint *)m_joint, (void *)&udata16[1], 50, NULL);
-//    jointGet(SYS_TEMP, 2, (Joint *)m_joint, (void *)&udata16[3], 50, NULL);
-//    jointGet(ACC_X, 6, (Joint *)m_joint, (void *)&udata16[4], 50, NULL);
     jointGet(SYS_SPEED_L, 4, (Joint *)m_joint, (void *)&udata16[7], 50, NULL);
     jointGet(SYS_POSITION_L, 4, (Joint *)m_joint, (void *)&udata16[9], 50, NULL);
-//    jointGet(MOT_ST_DAT, 4, (Joint *)m_joint, (void *)&udata16[11], 50, NULL);
-//    jointGet(BAT_VOLT, 2, (Joint *)m_joint, (void *)&udata16[13], 50, NULL);
-//    jointGet(SYS_ERROR, 2, (Joint *)m_joint, (void *)&udata16[14], 50, NULL);
     // 更新电流，并显示
     double temp =  udata16[1] + (udata16[2] * 65536);
     uiSetAndHealth->currentLineEdit->setText(QString::number(temp / 1000, 'f', 2) + "A");
@@ -104,19 +94,13 @@ void SetAndHealth::on_IDPushButton_clicked()
     }else {
         // 设新的ID
         jointSet(SYS_ID, 2, (Joint *)m_joint, (void*)&newID, 100, NULL);
-        // 总线上的通信还是以旧ID进行的
-//        jointSetSave2Flash(m_joint,100,NULL);
-        // 将软件当前控制的模块ID，更新为新ID，不然软件崩溃
-    //    emit IDChanged(newID);
+        // 之后需要重新更新ID在烧flash，这样才能设置成功
         QMessageBox::information(this, " 提示 ", "  请将模块重新上电并在软件中更新ID  ");
     }
 }
 
 void SetAndHealth::on_setZeroPushButton_clicked()
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     if(!m_joint) {
         return ;
     }
@@ -144,11 +128,6 @@ void SetAndHealth::on_ENonPPushButton_clicked()
       value = 1;
     }
     // 向下位机请求数据
-//    uint8_t data[2] = {0,0};
-//    data[1] = (uint8_t)( (value & 0xff00) >> 8 );
-//    data[0] = (uint8_t)( value & 0xff );
-//    can1->controller.SendMsg(jointBeingUsed->ID, CMDTYPE_WR_NR, SYS_ENABLE_ON_POWER, data, 2);
-//    can1->controller.delayMs(1);
     jointSet(SYS_ENABLE_ON_POWER, 2, (Joint *)m_joint, (void *)&value, 50, NULL);
 #ifdef LHDEBUG
     qDebug("SetAndHealth::on_ENonPPushButton_clicked(): value = %d", value);
@@ -173,23 +152,6 @@ void SetAndHealth::on_updateButton_clicked()
         return ;
     }
     uint16_t udata16[15] = {0};
-    /*
-#define SYS_ERROR             0x04    //错误代码 9
-#define SYS_VOLTAGE           0x05    //系统电压 1
-#define SYS_TEMP              0x06    //系统温度 3
-#define SYS_CURRENT_L         0x10    //当前电流低16位（mA） 2
-#define SYS_CURRENT_H         0x11    //当前电流高16位（mA）
-#define SYS_SPEED_L           0x12    //当前速度低16位（units/s） 5
-#define SYS_SPEED_H           0x13    //当前速度高16位（units/s）
-#define SYS_POSITION_L        0x14    //当前位置低16位（units） 6
-#define SYS_POSITION_H        0x15    //当前位置高16位（units）
-#define MOT_ST_DAT            0x26    //绝对编码器单圈数据 7
-#define MOT_MT_DAT            0x27    //绝对编码器多圈数据
-#define BAT_VOLT              0x29    //编码器电池电压 *10mV 8
-#define ACC_X                 0x2A    //加速度计x轴 *1000mg 4
-#define ACC_Y                 0x2B    //加速度计y轴 *1000mg
-#define ACC_Z                 0x2C    //加速度计z轴 *1000mg
-     * */
     jointGet(SYS_VOLTAGE, 2, (Joint *)m_joint, (void *)&udata16[0], 50, NULL);
     jointGet(SYS_CURRENT_L, 4, (Joint *)m_joint, (void *)&udata16[1], 50, NULL);
     jointGet(SYS_TEMP, 2, (Joint *)m_joint, (void *)&udata16[3], 50, NULL);
@@ -239,22 +201,22 @@ void SetAndHealth::on_updateButton_clicked()
       uiSetAndHealth->errorTextEdit->append("欠压，错误码0x0004\n");
     }
     if (udata16[14] & ERROR_MASK_OVER_TEMP) {
-      uiSetAndHealth->errorTextEdit->append("过温，错误码0x0008\n");
+      uiSetAndHealth->errorTextEdit->append("过温,错误码0x0008\n");
     }
     if (udata16[14] & ERROR_MASK_BATTERY) {
-      uiSetAndHealth->errorTextEdit->append("编码器电池错误，错误码0x0010\n");
+      uiSetAndHealth->errorTextEdit->append("编码器电池错误,错误码0x0010\n");
     }
     if (udata16[14] & ERROR_MASK_ENCODER) {
-      uiSetAndHealth->errorTextEdit->append("码盘错误，错误码0x0020\n");
+      uiSetAndHealth->errorTextEdit->append("码盘错误,错误码0x0020\n");
     }
     if (udata16[14] & ERROR_MASK_POTEN) {
-      uiSetAndHealth->errorTextEdit->append("电位器错误，错误码0x0040\n");
+      uiSetAndHealth->errorTextEdit->append("电位器错误,错误码0x0040\n");
     }
     if (udata16[14] & ERROR_MASK_CURRENT_INIT) {
-      uiSetAndHealth->errorTextEdit->append("电流检测错误，错误码0x0080\n");
+      uiSetAndHealth->errorTextEdit->append("电流检测错误,错误码0x0080\n");
     }
     if (udata16[14] & ERROR_MASK_FUSE) {
-      uiSetAndHealth->errorTextEdit->append("保险丝断开错误，错误码0x0100\n");
+      uiSetAndHealth->errorTextEdit->append("保险丝断开错误,错误码0x0100\n");
     }
     if (udata16[14] == 0) {
       uiSetAndHealth->errorTextEdit->append("No Error\n");

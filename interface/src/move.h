@@ -5,6 +5,7 @@
 #include "interfaglobal.h"
 
 class QTimer;
+class QPushButton;
 
 namespace Ui {
 class Move;
@@ -29,6 +30,7 @@ private:
     void txtBiasChangeManualSlider();
     void workModeUpdatetxtBias();
     void setMoveValue(double value);
+    void createSpeedButton();
 
 private slots:
     void on_txtBias_editingFinished();
@@ -51,6 +53,8 @@ private:
     double bias;
     double frequency;
     double amplitude;
+    QPushButton *leftButton;
+    QPushButton *rightButton;
 };
 
 #endif // MOVE_H

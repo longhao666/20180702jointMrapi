@@ -61,3 +61,6 @@ unix {
     INCLUDEPATH += $$PWD/qwt/LinuxQwtSrc
     LIBS += -L$$PWD/qwt/LinuxLib -lqwt
 }
+
+CONFIG += c++11
+

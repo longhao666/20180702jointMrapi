@@ -6,9 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1173</width>
-    <height>744</height>
+    <width>1155</width>
+    <height>708</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1155</width>
+    <height>708</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1155</width>
+    <height>708</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Widget</string>
@@ -16,8 +28,8 @@
   <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>660</y>
+     <x>0</x>
+     <y>630</y>
      <width>1151</width>
      <height>80</height>
     </rect>
@@ -60,8 +72,8 @@
   <widget class="QWidget" name="horizontalLayoutWidget_3">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>10</y>
+     <x>0</x>
+     <y>0</y>
      <width>691</width>
      <height>651</height>
     </rect>
@@ -71,10 +83,10 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>700</x>
-     <y>10</y>
+     <x>690</x>
+     <y>0</y>
      <width>461</width>
-     <height>651</height>
+     <height>631</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">

@@ -2,9 +2,8 @@
 #include "ui_move.h"
 #include <QDebug>
 #include <QTimer>
+#include <QPushButton>
 
-
-#define LHDEBUG 0
 
 #define PI 3.1415926
 #define MODE_MANUAL     0           // 手动控制
@@ -27,14 +26,15 @@ Move::Move(QWidget *parent) :
     QWidget(parent),
     uiMove(new Ui::Move)
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     uiMove->setupUi(this);
+
+    this->createSpeedButton();
+
     timerMove = NULL;
     bias = 0.0;
     amplitude = 0.0;
     frequency = 0.0;
+
 #ifdef LHRELEASE
     uiMove->waveModeCombo->setEnabled(false);
     uiMove->frequencyLineEdit->setEnabled(false);
@@ -44,19 +44,12 @@ Move::Move(QWidget *parent) :
 
 Move::~Move()
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     delete uiMove;
 }
 
 void Move::moveInit(int ID)
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     // 定义运动控制为关
-    Q_UNUSED(ID);
     enableRun = false;
     uiMove->confirmButton->setText("Click to run"); // 此外还有一处设置了setTex
     uiMove->stopButton->setStyleSheet("color:red");
@@ -65,9 +58,6 @@ void Move::moveInit(int ID)
         connect(timerMove, SIGNAL(timeout()), this, SLOT(slotTimeMoveDone()));
         //        timerMove->start(MOTION_CONTROL_INTEVAL); // 暂时不启动
     }
-#if 0
-    qDebug() << "ID = " << ID;
-#endif
     if(!m_joint) {
         qDebug("===================empty=======================");
         return ;
@@ -101,9 +91,6 @@ void Move::ClickStopButton()
 
 void Move::txtBiasChangeManualSlider()
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     if(!m_joint) {
         return ;
     }
@@ -167,9 +154,6 @@ void Move::workModeUpdatetxtBias()
 
 void Move::setMoveValue(double value)
 {
-#if 0
-    qDebug() << "===========" << value << "=====" << frequency << amplitude << "void Move::setMoveValue";
-#endif
     int workMode = uiMove->cmbWorkMode->currentIndex() + 1;
     switch(workMode) // 不同控制模式，控制指令不同
     {
@@ -199,14 +183,63 @@ void Move::setMoveValue(double value)
     }
 }
 
+void Move::createSpeedButton()
+{
+#if 1
+    qDebug() << "Move->size() = " << this->size();
+#endif
+//    auto speedButton = [](int x) { // mutable    // 在此处添加mutable关键字，代表传进来的变量可以被修改，不写该关键字则不能被修改
+//                                int value = x * sys_redu_ratio;
+//                                int temp = value * 65536/60;
+//                                jointSet(TAG_SPEED_L, 4, (Joint *)m_joint, (void *)&temp, 50, NULL);
+//                                };
+    leftButton = new QPushButton(this);
+    leftButton->setText("left");
+    leftButton->move(210, 80);
+    leftButton->hide();
+    connect(leftButton, &QPushButton::pressed,
+            []() { // mutable    // 在此处添加mutable关键字，代表传进来的变量可以被修改，不写该关键字则不能被修改
+
+                 int value = 2 * sys_redu_ratio;
+                 int temp = value * 65536/60;
+                 jointSet(TAG_SPEED_L, 4, (Joint *)m_joint, (void *)&temp, 50, NULL);
+             }
+            );
+    connect(leftButton, &QPushButton::released,
+           []() { // mutable    // 在此处添加mutable关键字，代表传进来的变量可以被修改，不写该关键字则不能被修改
+
+                int value = 0 * sys_redu_ratio;
+                int temp = value * 65536/60;
+                jointSet(TAG_SPEED_L, 4, (Joint *)m_joint, (void *)&temp, 50, NULL);
+            }
+            );
+    rightButton = new QPushButton(this);
+    rightButton->setText("right");
+    rightButton->move(350, 80);
+    rightButton->hide();
+    connect(rightButton,&QPushButton::pressed,
+           []() { // mutable    // 在此处添加mutable关键字，代表传进来的变量可以被修改，不写该关键字则不能被修改
+
+                int value = -2 * sys_redu_ratio;
+                int temp = value * 65536/60;
+                jointSet(TAG_SPEED_L, 4, (Joint *)m_joint, (void *)&temp, 50, NULL);
+            }
+            );
+    connect(rightButton,&QPushButton::released,
+           []() { // mutable    // 在此处添加mutable关键字，代表传进来的变量可以被修改，不写该关键字则不能被修改
+
+                int value = 0 * sys_redu_ratio;
+                int temp = value * 65536/60;
+                jointSet(TAG_SPEED_L, 4, (Joint *)m_joint, (void *)&temp, 50, NULL);
+            }
+            );
+}
+
 /**
  * @brief Move::on_txtBias_editingFinished
  */
 void Move::on_txtBias_editingFinished()
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif 
     if(!m_joint) {
         qDebug("===================empty=======================");
         return ;
@@ -232,26 +265,33 @@ void Move::on_txtBias_editingFinished()
  */
 void Move::on_cmbWorkMode_currentIndexChanged(int index)
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     if(!m_joint) {
         return ;
     }
     switch (index + 1) {
     case joint_open:
+        leftButton->hide();
+        rightButton->hide();
         jointSetMode(m_joint, joint_open, 50, NULL);
         break;
     case joint_current:
+        leftButton->hide();
+        rightButton->hide();
         jointSetMode(m_joint, joint_current, 50, NULL);
         break;
     case joint_speed:
+        leftButton->show();
+        rightButton->show();
         jointSetMode(m_joint, joint_speed, 50, NULL);
         break;
     case joint_position:
+        leftButton->hide();
+        rightButton->hide();
         jointSetMode(m_joint, joint_position, 50, NULL);
         break;
     case joint_cyclesync:
+        leftButton->hide();
+        rightButton->hide();
         jointSetMode(m_joint, joint_cyclesync, 50, NULL);
         break;
     default:
@@ -275,9 +315,6 @@ void Move::on_cmbWorkMode_currentIndexChanged(int index)
  */
 void Move::on_waveModeCombo_currentIndexChanged(int index)
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     switch(index) {
     case MODE_MANUAL:
         uiMove->frequencyLineEdit->setEnabled(false);
@@ -316,25 +353,16 @@ void Move::on_waveModeCombo_currentIndexChanged(int index)
 
 void Move::on_frequencyLineEdit_editingFinished()
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     frequency = uiMove->frequencyLineEdit->text().toDouble();
 }
 
 void Move::on_AmplitudeLineEdit_editingFinished()
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
     amplitude = uiMove->AmplitudeLineEdit->text().toDouble();
 }
 
 void Move::on_manualSlider_valueChanged(int value)
 {
-#if LHDEBUG
-    qDebug() <<__DATE__<<__TIME__<<__FILE__<<__LINE__<<__func__;
-#endif
 #if 0
     qDebug() << uiMove->manualSlider->hasFocus();
 #endif
@@ -350,10 +378,6 @@ void Move::on_manualSlider_valueChanged(int value)
 void Move::slotTimeMoveDone()
 {
     if(!m_joint) {
-#if 0
-        qDebug() <<__FILE__<<__LINE__<<__func__;
-        qDebug("===================empty===================");
-#endif;
         return ;
     }
     if(enableRun) {
