@@ -1,0 +1,88 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
+
+SET(LIB_NAME mrapi)
+SET(${LIB_NAME}_SOURCE_DIR .)
+
+# The version number.
+#set (${LIB_NAME}_VERSION_MAJOR 1)
+#set (${LIB_NAME}_VERSION_MINOR 0)
+#set (${LIB_NAME}_VERSION_PATCH 0)
+
+PROJECT(${LIB_NAME} VERSION 1.0.0 LANGUAGES C)
+
+SET (${LIB_NAME}_VERSION_STRING ${${LIB_NAME}_VERSION_MAJOR}.${${LIB_NAME}_VERSION_MINOR}.${${LIB_NAME}_VERSION_PATCH})
+MESSAGE("${LIB_NAME}_SOURCE_DIR : ${${LIB_NAME}_SOURCE_DIR}")
+
+SET(CMAKE_BUILD_TYPE Debug)
+#SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+#SET(EXECUTABLE_OUTPUT_PATH ${${LIB_NAME}_SOURCE_DIR}/bin)
+#SET(LIBRARY_OUTPUT_PATH    ${${LIB_NAME}_SOURCE_DIR}/lib)
+#SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY  ${${LIB_NAME}_SOURCE_DIR}/lib)
+
+ADD_DEFINITIONS(-DLinux)
+
+INCLUDE_DIRECTORIES(${${LIB_NAME}_SOURCE_DIR}/include)
+SET(USE_CAN_DRIVER "pcanbasic")
+
+IF(${USE_CAN_DRIVER} MATCHES "pcanbasic")
+    ADD_DEFINITIONS(-DPCAN_BASIC)
+    FIND_LIBRARY(CAN_DRIVER_LIB   NAMES pcanbasic PATHS /usr/lib  NO_DEFAULT_PATH)
+    INCLUDE_DIRECTORIES(${${LIB_NAME}_SOURCE_DIR}/drivers/pcan_basic)
+    INCLUDE_DIRECTORIES(/usr/include)
+    SET(DRIVER_SRC
+          ${${LIB_NAME}_SOURCE_DIR}/drivers/pcan_basic/pcan_basic.c
+          ${${LIB_NAME}_SOURCE_DIR}/drivers/pcan_basic/thread_linux.c
+    )
+    MESSAGE("PCANBasic driver is used.")
+ELSE(${USE_CAN_DRIVER} MATCHES "ethernet")
+    ADD_DEFINITIONS(-DECAN_BASIC)
+    INCLUDE_DIRECTORIES(${${LIB_NAME}_SOURCE_DIR}/drivers/ethernet)
+    SET(DRIVER_SRC
+          ${${LIB_NAME}_SOURCE_DIR}/drivers/ethernet/ecan_basic.c
+    )
+    MESSAGE("ethernet2CAN driver is used.")
+ENDIF()
+
+SET(SRC_SRCS
+      ${${LIB_NAME}_SOURCE_DIR}/src/module.c
+      ${${LIB_NAME}_SOURCE_DIR}/src/joint.c
+      ${${LIB_NAME}_SOURCE_DIR}/src/gripper.c
+      ${${LIB_NAME}_SOURCE_DIR}/src/master.c
+      ${${LIB_NAME}_SOURCE_DIR}/src/logger.c
+)
+
+SET(LIBCF_INCS
+      ${${LIB_NAME}_SOURCE_DIR}/include/mrapi.h
+)
+
+SET(SRCS
+      ${SRC_SRCS}
+      ${DRIVER_SRC}
+)
+
+ADD_LIBRARY(${LIB_NAME} SHARED ${SRCS})
+set_target_properties(${LIB_NAME} PROPERTIES VERSION ${${LIB_NAME}_VERSION_STRING}
+        SOVERSION ${${LIB_NAME}_VERSION_MAJOR})
+#ADD_LIBRARY(${LIB_NAME} STATIC ${SRCS})
+TARGET_LINK_LIBRARIES(${LIB_NAME} ${CAN_DRIVER_LIB})
+TARGET_LINK_LIBRARIES(${LIB_NAME} -lrt -lpthread -lm)
+IF(${USE_CAN_DRIVER} MATCHES "ethernet")
+TARGET_LINK_LIBRARIES(${LIB_NAME} -lpcap)
+ENDIF()
+
+#ADD_SUBDIRECTORY(./examples/test1 test1)
+ADD_EXECUTABLE(test1 examples/test1/position_profile_test.c examples/test1/MC_PositionProfile ${SRCS})
+TARGET_LINK_LIBRARIES(test1 ${CAN_DRIVER_LIB})
+TARGET_LINK_LIBRARIES(test1 -lrt -lpthread -lm -lpcap)
+
+INSTALL(TARGETS ${LIB_NAME}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib/MRAPI
+        ARCHIVE DESTINATION libstatic
+)
+INSTALL(FILES ${LIBCF_INCS} DESTINATION include/MRAPI)
+
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake" "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake" IMMEDIATE @ONLY)
+add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+
+

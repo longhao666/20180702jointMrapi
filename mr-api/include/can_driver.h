@@ -9,14 +9,17 @@
 
 #if defined PCAN_BASIC
 #include "pcan_basic.h"
+#define MIN_TV 1
 #endif
 
 #if defined ECAN_BASIC
 #include "ecan_basic.h"
+#define MIN_TV 1
 #endif
 
 #if defined CAN_STM32
 #include "can_stm32.h"
+#define MIN_TV 1000
 #endif
 
 #define delay_us(n) usleep(n)

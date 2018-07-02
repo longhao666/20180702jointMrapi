@@ -104,14 +104,14 @@ int32_t moduleGet(uint8_t index, uint8_t datLen, Module* pModule, void* data, in
 	}
 	pModule->readFlag[index] = CMD_IN_PROGRESS;
 	readEntryCallback(pModule, index, datLen, callBack);
-	for (i = 0; i < timeout; i++) {
+	for (i = 0; i < timeout/MIN_TV; i++) {
 		if (pModule->readFlag[index] == CMD_ACK_OK) {
 			if (data)
 				memcpy(data, (void*)&(pModule->memoryTable[index]), datLen);
             pModule->readFlag[index] = CMD_IDLE;
 			return MR_ERROR_OK;
 		}
-		delay_us(1);
+		delay_us(MIN_TV);
 	}
 	pModule->readFlag[index] = CMD_IDLE;
 	return MR_ERROR_TIMEOUT;
@@ -141,14 +141,14 @@ int32_t moduleSet(uint8_t index, uint8_t datLen, Module* pModule, void* data, in
 	}
 	pModule->writeFlag[index] = CMD_IN_PROGRESS;
 	writeEntryCallback(pModule, index, data, datLen, callBack);
-	for (i = 0; i < timeout; i++) {
+	for (i = 0; i < timeout/MIN_TV; i++) {
 		if (pModule->writeFlag[index] != CMD_IN_PROGRESS) {
 			if (pModule->writeFlag[index] == CMD_ACK_OK) ret = MR_ERROR_ACK1;
 			else if (pModule->writeFlag[index] == CMD_ACK_NOK) ret = MR_ERROR_ACK0;
 			pModule->writeFlag[index] = CMD_IDLE;
             return ret;
 		}
-		delay_us(1);
+		delay_us(MIN_TV);
 	}
     pModule->writeFlag[index] = CMD_IDLE;
 	return MR_ERROR_TIMEOUT;

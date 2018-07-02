@@ -354,7 +354,7 @@ JOINT_HANDLE __stdcall jointUp(uint16_t joindId, uint8_t masterId) {
 			jointStack[jointNbr++] = pJoint; // push into stack
 		else return (JOINT_HANDLE)pJoint; // already in the stack
 	}
-    res = jointGetType(pJoint, NULL, 400, NULL);
+    res = jointGetType(pJoint, NULL, 5000, NULL);
     if ((res == MR_ERROR_OK) && isJointType(*(pJoint->jointType))) {
 		while ((*(pJoint->jointRatio) == 0) && i < 10) {
 			i++;

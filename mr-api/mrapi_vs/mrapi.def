@@ -80,10 +80,8 @@ EXPORTS
 	gripperSetPosition @78
 	gripperSetUpdate @79
 	jointSetCurrent @80
-	jointGet @81
-	jointSet @82
-	gripperGet @83
-	gripperSet @84
+        gripperGet @81
+        gripperSet @82
 
 
 

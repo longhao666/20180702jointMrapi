@@ -4,10 +4,11 @@
 #include "stm32f4xx.h"
 #include "comm.h"
 #include "CAN_Mem.h"
+#include "states.h"
 
 #ifdef RT
 OS_TID LifeGuardThread;
-OS_ID LifeGuard_mutex;
+OS_MUT LifeGuard_mutex;
 int32_t lifeGuardFlag = 0;
 uint16_t Num_Module = 0;
 uint16_t LifeGuard_Slienttime[MAX_JOINTS+MAX_GRIPPERS];
@@ -26,7 +27,10 @@ __task void CAN1_receive_tsk()
   Message* ptrmsg;
   while(1) {
     os_mbx_wait (MBX_rx_ctrl[0], (void **)&ptrmsg, 0xFFFF);
-    canRxInterruptISR(CAN_Device[0], ptrmsg);
+    if (statesGetMode() == mode_relay)
+      canRxInterruptISR(CAN_Device[0], ptrmsg);
+    else if (statesGetMode() == mode_interpolate)
+      canRxInterruptISR(hCan[0], ptrmsg);
   }
 }
   
@@ -34,9 +38,11 @@ __task void CAN2_receive_tsk()
 {
   Message* ptrmsg;
   while(1) {
-    if (os_mbx_wait (MBX_rx_ctrl[1], (void **)&ptrmsg, 0xFFFF) != OS_R_TMO) {
+    os_mbx_wait (MBX_rx_ctrl[1], (void **)&ptrmsg, 0xFFFF);
+    if (statesGetMode() == mode_relay)
       canRxInterruptISR(CAN_Device[1], ptrmsg);
-    }
+    else if (statesGetMode() == mode_interpolate)
+      canRxInterruptISR(hCan[1], ptrmsg);
   }
 }
 #endif
@@ -69,77 +75,79 @@ CAN_HANDLE CAN_Mode_Init(uint8_t canId)
     free(fd);
     return NULL;   //初始化
   }
-    
-  CAN_FilerConf.FilterIdHigh = 0X0001<<5;     //32位ID
-  CAN_FilerConf.FilterIdLow = 0X0002<<5;
-  CAN_FilerConf.FilterMaskIdHigh = 0X00FF<<5; //32位MASK
-  CAN_FilerConf.FilterMaskIdLow = 0X00FF<<5;  
-  CAN_FilerConf.FilterFIFOAssignment = CAN_FILTER_FIFO0;//过滤器0关联到FIFO0
-  CAN_FilerConf.FilterNumber = 0;          // 过滤器0
-  CAN_FilerConf.FilterMode = CAN_FILTERMODE_IDMASK;
-  CAN_FilerConf.FilterScale = CAN_FILTERSCALE_16BIT;
-  CAN_FilerConf.FilterActivation = ENABLE; //激活滤波器0
-//  CAN_FilerConf.BankNumber = 0;
+ 
+  if (canId == 2) {
+    CAN_FilerConf.FilterIdHigh = 0X0001<<5;     //32位ID
+    CAN_FilerConf.FilterIdLow = 0X0002<<5;
+    CAN_FilerConf.FilterMaskIdHigh = 0X00FF<<5; //32位MASK
+    CAN_FilerConf.FilterMaskIdLow = 0X00FF<<5;  
+    CAN_FilerConf.FilterFIFOAssignment = CAN_FILTER_FIFO0;//过滤器0关联到FIFO0
+    CAN_FilerConf.FilterNumber = 0;          // 过滤器0
+    CAN_FilerConf.FilterMode = CAN_FILTERMODE_IDMASK;
+    CAN_FilerConf.FilterScale = CAN_FILTERSCALE_16BIT;
+    CAN_FilerConf.FilterActivation = ENABLE; //激活滤波器0
+  //  CAN_FilerConf.BankNumber = 0;
 
-  if(HAL_CAN_ConfigFilter(fd, &CAN_FilerConf) != HAL_OK) {
-    free(TxMessage);
-    free(RxMessage);
-    free(fd);
-    return NULL;//滤波器初始化
-  }
+    if(HAL_CAN_ConfigFilter(fd, &CAN_FilerConf) != HAL_OK) {
+      free(TxMessage);
+      free(RxMessage);
+      free(fd);
+      return NULL;//滤波器初始化
+    }
 
-  CAN_FilerConf.FilterIdHigh = 0X0003<<5;     //16位ID
-  CAN_FilerConf.FilterIdLow = 0X0004<<5;
-  CAN_FilerConf.FilterMaskIdHigh = 0X00FF<<5; //16位MASK
-  CAN_FilerConf.FilterMaskIdLow = 0X00FF<<5;  
-  CAN_FilerConf.FilterFIFOAssignment = CAN_FILTER_FIFO0;//过滤器1关联到FIFO0
-  CAN_FilerConf.FilterNumber = 1;          // 过滤器1
-  CAN_FilerConf.FilterMode = CAN_FILTERMODE_IDMASK;
-  CAN_FilerConf.FilterScale = CAN_FILTERSCALE_16BIT;
-  CAN_FilerConf.FilterActivation = ENABLE; //激活滤波器1
-//  CAN_FilerConf.BankNumber = 1;
+    CAN_FilerConf.FilterIdHigh = 0X0003<<5;     //16位ID
+    CAN_FilerConf.FilterIdLow = 0X0004<<5;
+    CAN_FilerConf.FilterMaskIdHigh = 0X00FF<<5; //16位MASK
+    CAN_FilerConf.FilterMaskIdLow = 0X00FF<<5;  
+    CAN_FilerConf.FilterFIFOAssignment = CAN_FILTER_FIFO0;//过滤器1关联到FIFO0
+    CAN_FilerConf.FilterNumber = 1;          // 过滤器1
+    CAN_FilerConf.FilterMode = CAN_FILTERMODE_IDMASK;
+    CAN_FilerConf.FilterScale = CAN_FILTERSCALE_16BIT;
+    CAN_FilerConf.FilterActivation = ENABLE; //激活滤波器1
+  //  CAN_FilerConf.BankNumber = 1;
 
-  if(HAL_CAN_ConfigFilter(fd, &CAN_FilerConf) != HAL_OK) {
-    free(TxMessage);
-    free(RxMessage);
-    free(fd);
-    return NULL;//滤波器初始化
-  }
+    if(HAL_CAN_ConfigFilter(fd, &CAN_FilerConf) != HAL_OK) {
+      free(TxMessage);
+      free(RxMessage);
+      free(fd);
+      return NULL;//滤波器初始化
+    }
 
-  CAN_FilerConf.FilterIdHigh = 0X0005<<5;     //32位ID
-  CAN_FilerConf.FilterIdLow = 0X0006<<5;
-  CAN_FilerConf.FilterMaskIdHigh = 0X00FF<<5; //32位MASK
-  CAN_FilerConf.FilterMaskIdLow = 0X00FF<<5;  
-  CAN_FilerConf.FilterFIFOAssignment = CAN_FILTER_FIFO1;//过滤器0关联到FIFO0
-  CAN_FilerConf.FilterNumber = 2;          // 过滤器1
-  CAN_FilerConf.FilterMode = CAN_FILTERMODE_IDMASK;
-  CAN_FilerConf.FilterScale = CAN_FILTERSCALE_16BIT;
-  CAN_FilerConf.FilterActivation = ENABLE; //激活滤波器0
-//  CAN_FilerConf.BankNumber = 2;
+    CAN_FilerConf.FilterIdHigh = 0X0005<<5;     //32位ID
+    CAN_FilerConf.FilterIdLow = 0X0006<<5;
+    CAN_FilerConf.FilterMaskIdHigh = 0X00FF<<5; //32位MASK
+    CAN_FilerConf.FilterMaskIdLow = 0X00FF<<5;  
+    CAN_FilerConf.FilterFIFOAssignment = CAN_FILTER_FIFO1;//过滤器0关联到FIFO0
+    CAN_FilerConf.FilterNumber = 2;          // 过滤器1
+    CAN_FilerConf.FilterMode = CAN_FILTERMODE_IDMASK;
+    CAN_FilerConf.FilterScale = CAN_FILTERSCALE_16BIT;
+    CAN_FilerConf.FilterActivation = ENABLE; //激活滤波器0
+  //  CAN_FilerConf.BankNumber = 2;
 
-  if(HAL_CAN_ConfigFilter(fd, &CAN_FilerConf) != HAL_OK) {
-    free(TxMessage);
-    free(RxMessage);
-    free(fd);
-    return NULL;//滤波器初始化
-  }
+    if(HAL_CAN_ConfigFilter(fd, &CAN_FilerConf) != HAL_OK) {
+      free(TxMessage);
+      free(RxMessage);
+      free(fd);
+      return NULL;//滤波器初始化
+    }
 
-  CAN_FilerConf.FilterIdHigh = 0X0007<<5;     // 16位ID
-  CAN_FilerConf.FilterIdLow = 0X0008<<5;
-  CAN_FilerConf.FilterMaskIdHigh = 0X00FF<<5; // 16位MASK
-  CAN_FilerConf.FilterMaskIdLow = 0X00FF<<5;  
-  CAN_FilerConf.FilterFIFOAssignment = CAN_FILTER_FIFO1;//过滤器0关联到FIFO0
-  CAN_FilerConf.FilterNumber = 3;          // 过滤器3
-  CAN_FilerConf.FilterMode = CAN_FILTERMODE_IDMASK;
-  CAN_FilerConf.FilterScale = CAN_FILTERSCALE_16BIT;
-  CAN_FilerConf.FilterActivation = ENABLE; //激活滤波器0
-  CAN_FilerConf.BankNumber = 0;
+    CAN_FilerConf.FilterIdHigh = 0X0007<<5;     // 16位ID
+    CAN_FilerConf.FilterIdLow = 0X0008<<5;
+    CAN_FilerConf.FilterMaskIdHigh = 0X00FF<<5; // 16位MASK
+    CAN_FilerConf.FilterMaskIdLow = 0X00FF<<5;  
+    CAN_FilerConf.FilterFIFOAssignment = CAN_FILTER_FIFO1;//过滤器0关联到FIFO0
+    CAN_FilerConf.FilterNumber = 3;          // 过滤器3
+    CAN_FilerConf.FilterMode = CAN_FILTERMODE_IDMASK;
+    CAN_FilerConf.FilterScale = CAN_FILTERSCALE_16BIT;
+    CAN_FilerConf.FilterActivation = ENABLE; //激活滤波器0
+    CAN_FilerConf.BankNumber = 14;  // 0-13 for CAN1 14-27 for CAN2
 
-  if(HAL_CAN_ConfigFilter(fd, &CAN_FilerConf) != HAL_OK) {
-    free(TxMessage);
-    free(RxMessage);
-    free(fd);
-    return NULL;//滤波器初始化
+    if(HAL_CAN_ConfigFilter(fd, &CAN_FilerConf) != HAL_OK) {
+      free(TxMessage);
+      free(RxMessage);
+      free(fd);
+      return NULL;//滤波器初始化
+    }
   }
 
 // 	CAN1_Mode_Init(CAN_SJW_1TQ,CAN_BS2_3TQ,CAN_BS1_5TQ,5,CAN_MODE_NORMAL); //CAN初始化,波特率1Mbps 
@@ -188,10 +196,12 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan)
     
     __HAL_CAN_ENABLE_IT(hcan, CAN_IT_FMP0);//FIFO0消息挂起中断允许.	  
     __HAL_CAN_ENABLE_IT(hcan, CAN_IT_FMP1);//FIFO1消息挂起中断允许.	  
+    __HAL_CAN_ENABLE_IT(hcan, CAN_IT_TME);//发送中断	  
 
-    HAL_NVIC_SetPriority(CAN1_RX0_IRQn,1,1);    //抢占优先级1，子优先级2
+//    HAL_NVIC_SetPriority(CAN1_RX0_IRQn,1,1);    //抢占优先级1，子优先级2
     HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);          //使能中断
     HAL_NVIC_EnableIRQ(CAN1_RX1_IRQn);          //使能中断
+    HAL_NVIC_EnableIRQ(CAN1_TX_IRQn);          //使能中断
   }
 
   if (hcan->Instance == CAN2) {
@@ -208,11 +218,13 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan)
    
     __HAL_CAN_ENABLE_IT(hcan, CAN_IT_FMP0);//FIFO0消息挂起中断允许.	  
     __HAL_CAN_ENABLE_IT(hcan, CAN_IT_FMP1);//FIFO0消息挂起中断允许.	  
+    __HAL_CAN_ENABLE_IT(hcan, CAN_IT_TME);//发送中断	  	  
 
   //    CAN2->IER|=1<<1;		//FIFO0消息挂起中断允许.	
   //    HAL_NVIC_SetPriority(CAN2_RX0_IRQn,1,2);    //抢占优先级1，子优先级2
     HAL_NVIC_EnableIRQ(CAN2_RX0_IRQn);          //使能中断
     HAL_NVIC_EnableIRQ(CAN2_RX1_IRQn);          //使能中断
+    HAL_NVIC_EnableIRQ(CAN2_TX_IRQn);          //使能中断
   }
 }
 
@@ -282,6 +294,7 @@ CAN_HANDLE canOpen_driver(const char* busno, const char* baud) {
     canId = 1;
 #ifdef RT
     os_mbx_init (MBX_rx_ctrl[0], sizeof(MBX_rx_ctrl[0]));
+    os_mbx_init (MBX_tx_ctrl[0], sizeof(MBX_tx_ctrl[0]));
     CAN1_taskID = os_tsk_create(CAN1_receive_tsk, 10);
 #endif
   }
@@ -289,6 +302,7 @@ CAN_HANDLE canOpen_driver(const char* busno, const char* baud) {
     canId = 2;
     #ifdef RT
     os_mbx_init (MBX_rx_ctrl[1], sizeof(MBX_rx_ctrl[1]));
+    os_mbx_init (MBX_tx_ctrl[1], sizeof(MBX_tx_ctrl[1]));
     CAN2_taskID = os_tsk_create(CAN2_receive_tsk, 11);
     #endif
   }
@@ -298,9 +312,11 @@ CAN_HANDLE canOpen_driver(const char* busno, const char* baud) {
   return fd;
 }
   
-void canReset_driver(CAN_HANDLE handle, char* baud) {}
+void canReset_driver(CAN_HANDLE handle, char* baud) {
   
-uint8_t canSend_driver(CAN_HANDLE fd, Message const *m) {
+}
+
+uint8_t CAN_hw_wr(CAN_HANDLE fd, Message const *m) {
   uint8_t MailBox = 0;
   /* Select one empty transmit mailbox */
   if ((fd->Instance->TSR&CAN_TSR_TME0) == CAN_TSR_TME0)  MailBox = 0;
@@ -327,6 +343,21 @@ uint8_t canSend_driver(CAN_HANDLE fd, Message const *m) {
 	//transmit message
 	fd->Instance->sTxMailBox[MailBox].TIR  |=  (1UL << 0);      //??????
 	return 0;
+}
+  
+uint8_t canSend_driver(CAN_HANDLE fd, Message const *m) {
+  Message *ptrmsg;
+  if (CAN_hw_wr(fd, m) == 1) {  // 发送失败
+    ptrmsg = CAN_TxAlloc();
+    
+    if (ptrmsg) {
+      memcpy(ptrmsg, m, sizeof(Message));
+      isr_mbx_send(MBX_tx_ctrl[0], ptrmsg);
+      return 0;
+    }
+    return 1;
+  }
+  return 0;
 }
 
 uint8_t canReceive_driver(CAN_HANDLE fd, Message *m) {
@@ -359,7 +390,12 @@ extern void relayCANRx(CAN_HANDLE h, Message* m);
 void CAN1_RX0_IRQHandler(void)
 {
   Message* m;
-  if (CAN1->RF0R & 3) {
+  if ((CAN1->RF0R & 3) == 3)
+  {
+      uint8_t i;
+      i ++;
+  }
+  while (CAN1->RF0R & 3) {
     m = CAN_RxAlloc();
     CAN_hw_rd(CAN1, m, 0);
 #ifdef NONE_RT
@@ -380,7 +416,7 @@ void CAN1_RX0_IRQHandler(void)
 void CAN1_RX1_IRQHandler(void) 
 {
   Message* m;
-  if (CAN1->RF1R & 3) {
+  while (CAN1->RF1R & 3) {
     m = CAN_RxAlloc();
     CAN_hw_rd(CAN1, m, 1);
 #ifdef NONE_RT
@@ -395,6 +431,18 @@ void CAN1_RX1_IRQHandler(void)
 #endif
     // Release FIFO 0/1 output mailbox
     CAN1->RF1R = CAN_RF1R_RFOM1;
+  }
+}
+
+void CAN1_TX_IRQHandler(void)
+{
+  Message *msg;
+  if ((CAN1->TSR & ((0x1UL << 16) | (0x1UL << 8) | 0x1UL)) != RESET)   
+  {
+    if (OS_R_MBX == isr_mbx_receive(MBX_tx_ctrl[0], (void**)&msg)) {
+      CAN_hw_wr(hCan[0], msg);
+    }
+    CAN1->TSR = (0x1UL << 16) | (0x1UL << 8) | 0x1UL;		// 清除所有 mailbox请求
   }
 }
 
@@ -433,6 +481,19 @@ void CAN2_RX1_IRQHandler(void)
   }
 }
 
+void CAN2_TX_IRQHandler(void)
+{
+  Message *msg;
+  if ((CAN2->TSR & ((0x1UL << 16) | (0x1UL << 8) | 0x1UL)) != RESET)   
+  {
+    if (OS_R_MBX == isr_mbx_receive(MBX_tx_ctrl[1], (void**)&msg)) {
+      CAN_hw_wr(hCan[1], msg);
+    }
+    CAN2->TSR = (0x1UL << 16) | (0x1UL << 8) | 0x1UL;		// 清除所有 mailbox请求
+  }
+}
+
+
 #ifdef RT
 void CreateReceiveTask(CAN_HANDLE fd, TASK_HANDLE* Thread, void* ReceiveLoopPtr) 
 {
@@ -459,7 +520,8 @@ __task void LifeGuard(void)
 {
 	while (lifeGuardFlag)
 	{
-		usleep(1000);  // 1ms
+    os_dly_wait(1);
+//		usleep(1000);  // 1ms
 		for (uint16_t i = 0; i < Num_Module; i++) {
 			os_mut_wait(LifeGuard_mutex, 0xffff);
 			LifeGuard_Slienttime[i]++;

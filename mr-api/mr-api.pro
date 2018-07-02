@@ -5,7 +5,6 @@ DESTDIR = ../Bin
 TARGET = mrapi
 
 win32 {
-
     DEF_FILE += $$PWD/mrapi_vs/mrapi.def
 }
 

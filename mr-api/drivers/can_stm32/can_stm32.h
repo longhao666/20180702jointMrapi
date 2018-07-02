@@ -2,6 +2,7 @@
 #define _CAN_STM32_H_
 #include "stm32f4xx.h"
 #include "sys.h"
+#include <RTL.h>
 
 #ifdef __cplusplus
 extern "C"
