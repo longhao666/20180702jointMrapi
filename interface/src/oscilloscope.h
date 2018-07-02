@@ -54,6 +54,8 @@ private slots:
 
   void on_yLeft_clicked();
 
+  void on_xDivComboBox_currentIndexChanged(int index);
+
 private:
   void SetValue(double value);
   Ui::OscilloScope *uiOscilloScope;

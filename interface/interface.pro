@@ -22,4 +22,4 @@ unix {
     LIBS += -L/usr/lib -lpcanbasic
 }
 
-DEFINES += LHDEBUG
+#DEFINES += LHDEBUG

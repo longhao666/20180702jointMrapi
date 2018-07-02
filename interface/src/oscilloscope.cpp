@@ -467,3 +467,24 @@ void OscilloScope::on_yLeft_clicked()
         uiOscilloScope->plotPOS->enableAxis(QwtPlot::yLeft, false);
     }
 }
+
+void OscilloScope::on_xDivComboBox_currentIndexChanged(int index)
+{
+    qDebug() << "OscilloScope::on_xDivComboBox_currentIndexChanged";
+    switch (index) {
+    case 0: {
+        int data = 10;
+        qDebug() << "OscilloScope::on_xDivComboBox_currentIndexChanged = 0";
+        jointSet(SCP_REC_TIM, 2, (Joint *)m_joint, (void *)&data, 50, NULL);
+        break;
+    }
+    case 1: {
+        int data = 0;
+        qDebug() << "OscilloScope::on_xDivComboBox_currentIndexChanged =1";
+        jointSet(SCP_REC_TIM, 2, (Joint *)m_joint, (void *)&data, 50, NULL);
+        break;
+    }
+    default:
+        break;
+    }
+}

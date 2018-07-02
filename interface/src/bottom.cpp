@@ -114,7 +114,7 @@ void Bottom::updatecmbID()
     vectID.clear();
     JOINT_HANDLE tempj = NULL;
     uint16_t ID = 0;
-    for(int i=1;i<2;i++) {
+    for(int i=1;i<MAX_JOINTS;i++) {
         tempj = jointUp(i, 0);
         if(tempj) {
             int re = jointGet(SYS_ID, 2, (Joint *)tempj, (void *)&ID, 100, NULL);
