@@ -2,9 +2,10 @@ include(./mr-api.pri)
 
 TEMPLATE = lib
 DESTDIR = ../Bin
+TARGET = mrapi
 
 win32 {
-    TARGET = mrapi
+
     DEF_FILE += $$PWD/mrapi_vs/mrapi.def
 }
 

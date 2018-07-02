@@ -9,10 +9,6 @@ path4 = lib/PCANBasic
 
 DEFINES += PCAN_BASIC
 
-DISTFILES += \
-    mrapi.def
-
-
 SOURCES += \
     $$PWD/$$path1/joint.c \
     $$PWD/$$path1/logger.c \
@@ -54,6 +50,6 @@ unix {
     DEFINES += Linux
     SOURCES += \
         $$PWD/drivers/pcan_basic/thread_linux.c
-    INCLUDEPATH += $$PWD/LinuxLib/Include
-    LIBS += -L$$PWD/LinuxLib -lpcanbasic
+    INCLUDEPATH += /usr/include/PCANBasic.h
+    LIBS += -L/usr/lib -lpcanbasic
 }

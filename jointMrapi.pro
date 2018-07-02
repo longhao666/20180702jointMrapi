@@ -29,6 +29,6 @@ DEFINES += LHTEST
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 
-#include(./joint/joint.pri)
-include(./mr-api/mr-api.pri)
+include(./joint/joint.pri)
+#include(./mr-api/mr-api.pri)
 include(./interface/interface.pri)
