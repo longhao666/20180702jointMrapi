@@ -14,7 +14,8 @@ INCLUDEPATH += $$PWD/../mr-api/include
 LIBS += -L$$OUT_PWD/../Bin -lmrapi
 
 win32 {
-    LIBS += -L$$PWD/../joint/winLib -lPCANBasic
+    LIBS += -L$$PWD/../mr-api/lib/PCANBasic/x64 -lPCANBasic
+    LIBS += -L$$PWD/../mr-api/lib/PCANBasic/x64/VC_LIB -lPCANBasic
 }
 
 unix {
